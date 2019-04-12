@@ -1,2 +1,3 @@
 exclude:
 - /backend/ethereum/truffle-config.js
+- /backend/ethereum/migrations/*
