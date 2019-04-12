@@ -1,3 +1,3 @@
 module.exports = {
-  POPSIZE: process.env.POPSIZE || 100
+  POPSIZE: process.env.POPSIZE || 5
 }
