@@ -16,6 +16,8 @@ spec:
     spec:
       containers:
         - image: trufflesuite/ganache-cli
+          args:
+            - -g 1
           name: ganache
           ports:
             - containerPort: 8545
