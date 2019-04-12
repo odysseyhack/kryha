@@ -36,7 +36,9 @@ function Mars() {
   let group = useRef();
   let theta = 0;
   useRender(() => {
-    const y = 5 * Math.sin(THREE.Math.degToRad((theta += 0.05)));
+    // const y = Math.sin(THREE.Math.degToRad((theta += 0.08)));
+    theta += 0.0015;
+    const y = theta;
     group.current.rotation.set(0, y, 0);
   });
 
