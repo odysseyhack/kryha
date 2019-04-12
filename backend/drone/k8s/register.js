@@ -1,6 +1,6 @@
 const Client = require('kubernetes-client').Client
 const config = require('kubernetes-client').config
-const serviceManifest = require('./pod-service.json')
+const serviceManifest = require('./service.json')
 
 async function register (address) {
   try {
