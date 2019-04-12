@@ -7,8 +7,8 @@ services:
     volumes:
       - ./backend/world/src:/usr/src/app/src
     environment:
-      - MONGO_URL='mongodb://world-mongo:27017/world'
-      - ETHEREUM_URL='ws://ethereum-node:8545'
+      - MONGO_URL=mongodb://world-mongo:27017/world
+      - ETHEREUM_URL=ws://ethereum-node:8545
     command: 'npm run dev'
     ports:
       - '9001:9001'
