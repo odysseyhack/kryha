@@ -1,0 +1,49 @@
+{
+  "kind": "Deployment",
+  "spec": {
+    "replicas": 1,
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "image": "kryha/drone",
+            "name": "pod",
+            "args": ["sh", "-c", "node service.js && npx serve -p 3000"],
+            "ports": [
+              {
+                "containerPort": 3000
+              }
+            ],
+            "env": [
+              {
+                "name": "GANACHE",
+                "value": "ws://ganache:8545"
+              },
+              {
+                "name": "CLUSTER",
+                "value": "TRUE"
+              }
+            ]
+          }
+        ]
+      },
+      "metadata": {
+        "labels": {
+          "app": "pod"
+        }
+      }
+    },
+    "selector": {
+      "matchLabels": {
+        "app": "pod"
+      }
+    }
+  },
+  "apiVersion": "apps/v1",
+  "metadata": {
+    "labels": {
+      "app": "pod"
+    },
+    "name": "pod"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "startup",
+  "version": "1.0.0",
+  "description": "Start up the initial drone pods.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "kubernetes-client": "^6.12.1",
+    "uuid": "^3.3.2"
+  }
+}
