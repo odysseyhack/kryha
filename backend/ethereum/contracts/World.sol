@@ -43,10 +43,18 @@ contract World {
         uint place = transformCoordinates(_x, _y);
         WorldState storage worldState = getWorldState[place];
         require(worldState.exists == true, "No WorldState is found");
-        worldState.air += _air;
-        worldState.resources += _resources;
-        worldState.nature += _nature;
-        worldState.water += _water;
+        int newAir = worldState.air + _air;
+        require(newAir > 0, "After mining not enough air");
+        int newResources = worldState.resources + _resources;
+        require(newResources > 0, "After mining not enough resources");
+        int newNature = worldState.nature + _nature;
+        require(newNature > 0, "After mining not enough nature");
+        int newWater = worldState.water + _water;
+        require(newWater > 0, "After mining not enough water");
+        worldState.air = newAir;
+        worldState.resources = newResources;
+        worldState.nature = newNature;
+        worldState.water = newWater;
         emit E_MineResources(_x, _y, _air, _resources, _nature, _water);
     }
 
