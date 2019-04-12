@@ -2,6 +2,7 @@ const sample = require('lodash.sample')
 
 const constants = require('../constants')
 const sort = require('./helper/insertSort')
+const eth = require('../helper/eth')
 
 const uuidv4 = require('uuid/v4')
 
@@ -43,12 +44,12 @@ class Genetics {
     this.sortFitness()
   }
 
-  // TODO: announce death on blockchain
   checkIfDead () {
     let lastSurvivor = this.agents[constants.POPSIZE - constants.CHILDREN - 1]
 
     if (lastSurvivor.fitness > this.fitness) {
       console.log(`I'm dead: ${this.id} ${this.fitness}`)
+      eth.killDrone(this.account)
       return false
     }
 

@@ -8,11 +8,15 @@ const GeneticsC = require('./genetics')
 const PORT = process.env.PORT || 3000
 const DNA = process.env.DNA || 'DEFAULTDNA'
 
+const PARENT1 = process.env.PARENT1 || '0x0000000000000000000000000000000000000000'
+const PARENT2 = process.env.PARENT2 || '0x0000000000000000000000000000000000000000'
+
 async function main () {
   let account = await eth.newAccount()
 
-  // Register on k8s
+  // Register on k8s and blockchain
   register(account.address)
+  eth.createDrone(account, PARENT1, PARENT2, DNA)
 
   const Genetics = new GeneticsC(account.address.slice(1), DNA, account)
 
