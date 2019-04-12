@@ -1,0 +1,11 @@
+- the problem is ever changing (changing priorities) how will this affect fitness score optimilisation
+
+
+- first kids and then kill excess? Or first publish pairs and only make kids with allowed?
+- dual pairs (same agents different order)?
+
+
+
+ANSWERS:
+
+- before making pair; ask first; and get dna. If not allowed; dont

@@ -5,11 +5,10 @@ const config = require('kubernetes-client').config
 const uuidv4 = require('uuid/v4')
 const deploymentManifest = require('./startup-drone.json')
 
-let globalname = 'q'.concat(uuidv4().replace(/-/g, ''))
-
 let POPSIZE = Number(require('./constants').POPSIZE)
 
 async function deploy () {
+  let name = 'q'.concat(uuidv4().replace(/-/g, ''))
   try {
     let client
     if (process.env.CLUSTER === 'TRUE') { // within cluster
@@ -29,11 +28,11 @@ async function deploy () {
     console.log('Namespaces: ', namespaces)
     // console.log(client.apis.apps.v1.namespaces('default'))
 
-    deploymentManifest.metadata.name = globalname
-    deploymentManifest.metadata.labels.app = globalname
-    deploymentManifest.spec.template.metadata.labels.app = globalname
-    deploymentManifest.spec.selector.app = globalname
-    deploymentManifest.spec.selector.matchLabels.app = globalname
+    deploymentManifest.metadata.name = name
+    deploymentManifest.metadata.labels.app = name
+    deploymentManifest.spec.template.metadata.labels.app = name
+    deploymentManifest.spec.selector.app = name
+    deploymentManifest.spec.selector.matchLabels.app = name
 
     console.log(deploymentManifest.spec.template)
     // Create a new Deployment.
@@ -54,7 +53,7 @@ async function deploy () {
     console.error('Error: ', err)
   }
 
-  return globalname
+  return name
 }
 
 for (let i = 0; i < POPSIZE; i++) {
