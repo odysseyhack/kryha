@@ -1,1 +1,0 @@
-Init of the drones
