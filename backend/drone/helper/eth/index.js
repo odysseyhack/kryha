@@ -73,5 +73,21 @@ async function newAccount () {
   return newAccount
 }
 
+async function addWorldState (account, x, y, air, resources, nature, water) {
+  return sendContract(account, 'world', 'addWorldState', x, y, air, resources, nature, water)
+}
+
+async function mineResources (account, x, y, air, resources, nature, water) {
+  return sendContract(account, 'world', 'mineResources', x, y, air, resources, nature, water)
+}
+
+async function killDrone (account) {
+  return sendContract(account, 'world', 'killDrone')
+}
+
+async function createDrone (account, parent1, parent2, dna) {
+  return sendContract(account, 'world', 'createDrone', parent1, parent2, web3.utils.utf8ToHex(dna))
+}
+
 // TODO: export contract functions
-module.exports = { newAccount }
+module.exports = { newAccount, addWorldState, mineResources, killDrone, createDrone }
