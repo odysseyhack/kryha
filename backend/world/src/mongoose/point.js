@@ -8,19 +8,19 @@ const pointSchema = new Schema({
   y: {
     type: mongoose.SchemaTypes.Number
   },
-  water: {
-    type: mongoose.SchemaTypes.Number,
-    default: () => Math.floor(Math.random() * 100)
-  },
-  oxygen: {
-    type: mongoose.SchemaTypes.Number,
-    default: () => Math.floor(Math.random() * 100)
-  },
-  flora: {
+  air: {
     type: mongoose.SchemaTypes.Number,
     default: () => Math.floor(Math.random() * 100)
   },
   resources: {
+    type: mongoose.SchemaTypes.Number,
+    default: () => Math.floor(Math.random() * 100)
+  },
+  nature: {
+    type: mongoose.SchemaTypes.Number,
+    default: () => Math.floor(Math.random() * 100)
+  },
+  water: {
     type: mongoose.SchemaTypes.Number,
     default: () => Math.floor(Math.random() * 100)
   }
