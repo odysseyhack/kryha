@@ -2,8 +2,9 @@ Kubernetes instructions
 
 Reset:
 ```
-k delete deployment $(k get deployments |awk '{ print $1 }' )
-k delete svc $(k get svc |awk '{ print $1 }' )
+sudo kubectl delete deployment $(sudo kubectl get deployments |grep "^q" | awk '{ print $1 }' )
+sudo kubectl delete deployment $(sudo kubectl get deployments |awk '{ print $1 }' )
+sudo kubectl delete svc $(sudo kubectl get svc |awk '{ print $1 }' )
 helm delete ganache
 helm delete eth
 ````
