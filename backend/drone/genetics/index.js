@@ -3,18 +3,25 @@ const sample = require('lodash.sample')
 const constants = require('../constants')
 const sort = require('./helper/insertSort')
 
+const uuidv4 = require('uuid/v4')
+
 class Genetics {
-  constructor (id, account) {
+  constructor (id, DNA, account) {
     this.fitness = 0
     this.isDead = false
     this.account = account
+
+    this.DNA = DNA
     this.id = id
 
     this.agents = []
     this.childrenTokens = 0
     this.parents = []
 
-    this.sortFitness = () => sort(this.agents)
+    this.pairs = []
+
+    this.sortFitness = () => sort(this.agents, 'fitness')
+    this.sortPairs = () => sort(this.pairs, 'id')
   }
 
   // TODO: make a real fitness calc
@@ -70,7 +77,6 @@ class Genetics {
   }
 
   // TODO: put on blockchain
-  // TODO: announce each token individually
   // PUBSUB ?
   announceChildrenTokens () {
     this._determineChildrenTokens()
@@ -81,8 +87,48 @@ class Genetics {
   // TODO: register from blockchain / pubsub
   registerChildrenTokens (id, childrenTokens) {
     for (let i = 0; i < childrenTokens; i++) {
-      this.parents.push(id)
+      for (let j = 0; j < childrenTokens; j++) {
+        this.parents.push(id)
+      }
     }
+  }
+
+  announcePairs () {
+    let pairs = []
+    for (let i = 0; i < this.childrenTokens; i++) {
+      let parent2
+
+      while (this.parents.length > 0) {
+        parent2 = sample(this.parents)
+
+        // remove parent after selecting
+        this.parents.splice(this.parents.indexOf(parent2), 1)
+
+        // TODO: check if parent has available paring
+        // TODO: retrieve DNA
+
+        break
+      }
+
+      pairs.push([{
+        id: uuidv4(),
+        parent1: {
+          id: this.id,
+          DNA: this.DNA
+        },
+        parent2: {
+          id: parent2,
+          DNA: ''
+        }
+      }])
+    }
+
+    return pairs
+  }
+
+  registerPairs (pairs) {
+    this.pairs = [...this.pairs, pairs]
+    this.sortPairs()
   }
 
   // TODO: mix dna

@@ -6,6 +6,7 @@ const eth = require('./helper/eth')
 const GeneticsC = require('./genetics')
 
 const PORT = process.env.PORT || 3000
+const DNA = process.env.DNA || 'DEFAULTDNA'
 
 async function main () {
   let account = await eth.newAccount()
@@ -13,7 +14,7 @@ async function main () {
   // Register on k8s
   register(account.address)
 
-  const Genetics = new GeneticsC(account.address.slice(1), account)
+  const Genetics = new GeneticsC(account.address.slice(1), DNA, account)
 
   let geneticRoutes = require('./genetics/routes')(Genetics)
 
