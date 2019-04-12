@@ -1,7 +1,11 @@
 const Web3 = require('web3')
 
 // TODO: add abi
-const abi;
+const DroneABI = require('../../contracts/Drone.json')
+const WorldABI = require('../../contracts/World.json')
+
+const DroneAddress = process.env.DRONE_ADDRESS
+const WorldAddress = process.env.WORLD_ADDRESS
 
 const RPC = process.env.APP_RPC || 'http://localhost:8545'
 
@@ -15,13 +19,15 @@ const OWNER_PRIVATE_KEY = process.env.OWNER_PRIVATE_KEY || '0x735bf515f3a8fc16aa
 const richAccount = web3.eth.accounts.privateKeyToAccount(OWNER_PRIVATE_KEY)
 const TRANSFERRED_AMOUNT = Number(process.env.TRANSFERRED_AMOUNT) || 2000000
 
-// FIXME: find better method to do this
-function findContractAddress (abi) {
-  return Object.values(abi.networks)[0].address
-}
-
-function loadContract () {
-  return new web3.eth.Contract(abi.abi, findContractAddress(abi))
+function loadContract (contractName) {
+  switch (contractName) {
+    case 'drone':
+      return new web3.eth.Contract(DroneABI.abi, DroneAddress)
+    case 'world':
+      return new web3.eth.Contract(WorldABI.abi, WorldAddress)
+    default:
+      throw new Error('Contract not defined')
+  }
 }
 
 async function sendTx (account, tx) {
@@ -31,8 +37,8 @@ async function sendTx (account, tx) {
   return web3.eth.sendSignedTransaction(signedTx.rawTransaction)
 }
 
-async function sendContract (account, method, ...args) {
-  let contract = loadContract()
+async function sendContract (account, contractName, method, ...args) {
+  let contract = loadContract(contractName)
 
   const tx = {
     to: contract.options.address,
@@ -45,8 +51,8 @@ async function sendContract (account, method, ...args) {
   return sendTx(account, tx)
 }
 
-function callContract (account, method, ...args) {
-  let contract = loadContract()
+function callContract (account, contractName, method, ...args) {
+  let contract = loadContract(contractName)
 
   method = contract.methods[method](...args)
   return method.call({ from: account.address })
@@ -67,6 +73,5 @@ async function newAccount () {
   return newAccount
 }
 
-//TODO: export contract functions
-
+// TODO: export contract functions
 module.exports = { newAccount }
