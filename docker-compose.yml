@@ -1,0 +1,25 @@
+version: '3'
+services:
+  world:
+    build: 
+      context: ./backend/world/
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./backend/world/src:/usr/src/app/src
+    environment:
+      - MONGO_URL='mongodb://world-mongo:27017/world'
+    command: 'npm run dev'
+    ports:
+      - '9001:9001'
+    depends_on:
+      - world-mongo
+
+  world-mongo:
+    image: mongo:4.0.6
+    volumes:
+      - world-mongo-data:/data/db
+    ports:
+      - 27017:27017
+
+volumes:
+  world-mongo-data:
