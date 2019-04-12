@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.5.0;
 
 
 contract World {
@@ -24,10 +24,6 @@ contract World {
         ySize = _ySize;
     }
 
-    function createWorldState(int _air, int _resources, int _nature, int _water) internal pure returns(WorldState){
-        return  WorldState(_air, _resources, _nature, _water, true);
-    }
-
     function transformCoordinates(uint _x, uint _y) internal view returns (uint){
         uint place = _x * ySize + _y;
         return place;
@@ -35,7 +31,7 @@ contract World {
 
     function addWorldState( uint _x, uint _y, int _air, int _resources, int _nature, int _water) external {
         uint place = transformCoordinates(_x, _y);
-        getWorldState[place] = createWorldState(_air, _resources, _nature, _water);
+        getWorldState[place] = WorldState(_air, _resources, _nature, _water, true);
         emit E_FoundResources(_x, _y, _air, _resources, _nature, _water);
     }
 
