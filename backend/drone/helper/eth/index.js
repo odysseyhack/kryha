@@ -12,11 +12,6 @@ const RPC = process.env.APP_RPC || 'http://localhost:8545'
 const provider = new Web3.providers.HttpProvider(RPC)
 const web3 = new Web3(provider)
 
-// Owner account should also be rich
-
-// TODO: make sure that there is a rich account
-const OWNER_PRIVATE_KEY = process.env.OWNER_PRIVATE_KEY || '0x735bf515f3a8fc16aa634574dd4bb2bf2499ea924f461c4f620403a1e45b60fe'
-const richAccount = web3.eth.accounts.privateKeyToAccount(OWNER_PRIVATE_KEY)
 const TRANSFERRED_AMOUNT = Number(process.env.TRANSFERRED_AMOUNT) || 2000000
 
 function loadContract (contractName) {
@@ -61,6 +56,35 @@ function callContract (account, contractName, method, ...args) {
 async function newAccount () {
   let newAccount = web3.eth.accounts.create()
 
+  switch (process.env.NOT_PERSONAL) {
+    case 'true':
+    case 'TRUE':
+      return _newAccountRich(newAccount)
+    default:
+      return _newAccountPersonal(newAccount)
+  }
+}
+
+async function _newAccountPersonal (newAccount) {
+  let rich = (await web3.eth.personal.getAccounts())[0]
+  await web3.eth.personal.unlockAccount(rich)
+
+  const tx = {
+    to: newAccount.address,
+    from: rich,
+    value: TRANSFERRED_AMOUNT
+  }
+
+  await web3.eth.personal.sendTransaction(tx, '')
+
+  return newAccount
+}
+
+async function _newAccountRich (newAccount) {
+  // Owner account should also be rich
+  const OWNER_PRIVATE_KEY = process.env.OWNER_PRIVATE_KEY || '0x735bf515f3a8fc16aa634574dd4bb2bf2499ea924f461c4f620403a1e45b60fe'
+  const richAccount = web3.eth.accounts.privateKeyToAccount(OWNER_PRIVATE_KEY)
+
   const tx = {
     to: newAccount.address,
     from: richAccount.address,
@@ -82,11 +106,11 @@ async function mineResources (account, x, y, air, resources, nature, water) {
 }
 
 async function killDrone (account) {
-  return sendContract(account, 'world', 'killDrone')
+  return sendContract(account, 'drone', 'killDrone')
 }
 
 async function createDrone (account, parent1, parent2, dna) {
-  return sendContract(account, 'world', 'createDrone', parent1, parent2, web3.utils.utf8ToHex(dna))
+  return sendContract(account, 'drone', 'createDrone', parent1, parent2, web3.utils.utf8ToHex(dna))
 }
 
 // TODO: export contract functions
