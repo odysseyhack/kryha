@@ -1,0 +1,30 @@
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "pod",
+    "creationTimestamp": null,
+    "labels": {
+      "app": "pod"
+    }
+  },
+  "spec": {
+    "ports": [
+      {
+        "name": "3000",
+        "protocol": "TCP",
+        "port": 3000,
+        "targetPort": 3000
+      }
+    ],
+    "selector": {
+      "app": "pod"
+    },
+    "type": "NodePort",
+    "sessionAffinity": "None",
+    "externalTrafficPolicy": "Cluster"
+  },
+  "status": {
+    "loadBalancer": {}
+  }
+}
