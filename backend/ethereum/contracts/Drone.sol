@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.5.0;
 
 contract Drone{
 
@@ -23,7 +23,7 @@ contract Drone{
         WorldContract = _WorldContract;
     }
 
-    function createDrone(address _parent1, address _parent2, bytes32[] _dna) public {
+    function createDrone(address _parent1, address _parent2, bytes32[] memory _dna) public {
         idToDrone[msg.sender] = DroneStruct(_parent1, _parent2, _dna);
         emit NewDrone(msg.sender, _parent1, _parent2, _dna);
     }
@@ -41,7 +41,7 @@ contract Drone{
         return idToDrone[_drone].parent2;
     }
 
-    function getDna(address _drone) public view returns(bytes32[]){
+    function getDna(address _drone) public view returns(bytes32[] memory){
         return idToDrone[_drone].dna;
     }
 }
