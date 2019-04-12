@@ -17,7 +17,7 @@ contract World {
         bool exists;
     }
 
-    mapping (uint => WorldState) getWorldState;
+    mapping (uint => WorldState) public getWorldState;
 
     constructor(uint _xSize, uint _ySize) public{
         xSize = _xSize;
