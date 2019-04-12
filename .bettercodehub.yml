@@ -1,0 +1,2 @@
+exclude:
+- /ethereum/truffle-config.js
