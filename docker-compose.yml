@@ -6,6 +6,7 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - ./backend/world/src:/usr/src/app/src
+      - ./backend/ethereum/build/contracts:/ethereum/build/contracts
     environment:
       - MONGO_URL=mongodb://world-mongo:27017/world
       - ETHEREUM_URL=ws://ethereum-node:8545
