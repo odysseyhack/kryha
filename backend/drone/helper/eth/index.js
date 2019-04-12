@@ -10,9 +10,6 @@ const web3 = new Web3(provider)
 
 // Owner account should also be rich
 
-// TODO: make sure that there is a rich account
-const OWNER_PRIVATE_KEY = process.env.OWNER_PRIVATE_KEY || '0x735bf515f3a8fc16aa634574dd4bb2bf2499ea924f461c4f620403a1e45b60fe'
-const richAccount = web3.eth.accounts.privateKeyToAccount(OWNER_PRIVATE_KEY)
 const TRANSFERRED_AMOUNT = Number(process.env.TRANSFERRED_AMOUNT) || 2000000
 
 // FIXME: find better method to do this
@@ -55,14 +52,15 @@ function callContract (account, method, ...args) {
 async function newAccount () {
   let newAccount = web3.eth.accounts.create()
 
-  const tx = {
+  // rich account
+  let richAccount = web3.account.personal.getAccounts()[0]
+  await web3.eth.personal.unlockAccount(richAccount)
+  await web3.eth.sendTransaction({
+    from: richAccount,
     to: newAccount.address,
-    from: richAccount.address,
-    nonce: await web3.eth.getTransactionCount(richAccount.address),
-    value: TRANSFERRED_AMOUNT
-  }
+    value: TRANSFERRED_AMOUNT    
+  })
 
-  await sendTx(OWNER_PRIVATE_KEY, tx)
 
   return newAccount
 }
