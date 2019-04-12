@@ -88,8 +88,8 @@ function Stars() {
 function Universe() {
   return (
     <Canvas className="Universe">
-      <ambientLight color="lightblue" />
-      <pointLight color="white" intensity={0.1} position={[10, 10, 10]} />
+      <ambientLight color="white" />
+      <pointLight color="white" intensity={0.05} position={[10, 10, 10]} />
       {/* <Octahedron /> */}
       <Mars />
       <Stars />
