@@ -38,14 +38,12 @@ registerListener(worldContract, 'E_MineResources', {}, async (error, event) => {
     const { x, y, air, resources, nature, water } = event.returnValues
     // find point
     const point = await Point.findOne({ x, y }).exec()
-    const oldPoint = JSON.stringify(point)
     // update point
     point.set('air', Number(point.air) + Number(air))
     point.set('resources', Number(point.resources) + Number(resources))
     point.set('nature', Number(point.nature) + Number(nature))
     point.set('water', Number(point.water) + Number(water))
     await point.save()
-    console.info('updated point:', JSON.parse(oldPoint), point)
   }
 })
 
