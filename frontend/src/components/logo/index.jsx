@@ -3,7 +3,7 @@ import './index.css';
 
 function Logo() {
   return (
-    <div className="Logo">Discovery</div>
+    <div className="Logo">horizon</div>
   );
 }
 

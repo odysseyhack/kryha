@@ -12,7 +12,7 @@ const RPC = process.env.APP_RPC || 'http://localhost:8545'
 const provider = new Web3.providers.HttpProvider(RPC)
 const web3 = new Web3(provider)
 
-const TRANSFERRED_AMOUNT = Number(process.env.TRANSFERRED_AMOUNT) || 2000000
+const TRANSFERRED_AMOUNT = Number(process.env.TRANSFERRED_AMOUNT) || 1000000000
 
 function loadContract (contractName) {
   switch (contractName) {
