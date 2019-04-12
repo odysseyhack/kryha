@@ -1,2 +1,2 @@
 exclude:
-- /ethereum/truffle-config.js
+- backend/ethereum/truffle-config.js
