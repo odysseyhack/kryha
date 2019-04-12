@@ -22,8 +22,6 @@ function insertSort (A, name) {
     i++
   }
 
-  // console.log('STEPS DONE: ', steps)
-
   return A
 }
 
