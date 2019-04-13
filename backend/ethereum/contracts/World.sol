@@ -43,6 +43,11 @@ contract World {
         return place;
     }
 
+    function WorldStateChecked( uint _x, uint _y) external view returns (bool){
+        uint place = transformCoordinates(_x, _y);
+        return getWorldState[place].exists;
+    }
+
     function addWorldState( uint _x, uint _y, int _air, int _resources, int _nature, int _water) external {
         
         uint place = transformCoordinates(_x, _y);

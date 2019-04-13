@@ -1,10 +1,15 @@
 import * as THREE from 'three/src/Three';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 // A THREE.js React renderer, see: https://github.com/drcmda/react-three-fiber
-import { Canvas, useRender } from 'react-three-fiber';
+import { Canvas, useRender, useThree } from 'react-three-fiber';
 // A React animation lib, see: https://github.com/react-spring/react-spring
 import { useSpring, animated } from 'react-spring/three';
+import ThreeOrbitControls from 'three-orbit-controls';
+import max from 'lodash/max';
 import './index.css';
+
+const OrbitControls = ThreeOrbitControls(THREE);
+
 
 // function Octahedron() {
 //   const [active, setActive] = useState(false)
@@ -58,13 +63,21 @@ function createData(data, size) {
 async function fetchWorldState() {
   try {
     const data = await fetch('http://localhost:9001/world/');
-    console.log(JSON.stringify(await data.json()));
+    const json = await data.json();
+    return json;
   } catch {
     console.log('error');
     return null;
   }
   return null;
 }
+
+const COLORS = {
+  air: new THREE.Color('white'),
+  water: new THREE.Color('blue'),
+  resources: new THREE.Color('brown'),
+  nature: new THREE.Color('green'),
+};
 
 /**
  * Update every block in the given data texture.
@@ -73,12 +86,15 @@ async function fetchWorldState() {
  * @param {*} worldState a width x height x 3 array for the RGB color for each x,y position
  */
 function updateDataTexture(textRef, size, worldState) {
+  if (!worldState) return;
   for ( var i = 0; i < size; i ++ ) {
+    const obj = worldState[i];
+    const bestType = Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b);
+    const color = COLORS[bestType];
     var stride = i * 3;
-
-    var r = Math.floor( Math.random() * 255 );
-    var g = Math.floor( Math.random() * 255 );
-    var b = Math.floor( Math.random() * 255 );
+    var r = Math.floor( color.r * 255 );
+    var g = Math.floor( color.g * 255 );
+    var b = Math.floor( color.b * 255 );
 
     textRef.current.map.image.data.set([r,g,b], stride);
   }
@@ -88,7 +104,6 @@ function updateDataTexture(textRef, size, worldState) {
 const IMG_LOC = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/4273/';
 const MAP_IMG_LOC = IMG_LOC + 'mars-map.jpg';
 const BUMP_IMG_LOC = IMG_LOC + 'mars-bump.jpg';
-const COLORS = [new THREE.Color('white'), new THREE.Color('blue'), new THREE.Color('brown'), new THREE.Color('red')];
 
 function getRasterData() {
   const color = new THREE.Color();
@@ -99,7 +114,7 @@ function getRasterData() {
   return data;
 }
 
-function Mars() {
+function Mars({ showRegions }) {
   // Create RASTER texture
   const width = 100;
   const height = 100;
@@ -137,16 +152,27 @@ function Mars() {
 
   let prevSeconds = 0;
 
+  // useThree(({ scene, camera }) => {
+  //   camera.position.set(1, 0, -10)
+  //   camera.lookAt(new THREE.Vector3())
+  //   let controls = new OrbitControls(camera);
+  //   controls.update();
+  // });
+
+  const { camera } = useThree();
+  let controls = new OrbitControls(camera);
+
   // Continuously update the GL render
   useRender(() => {
     // const y = Math.sin(THREE.Math.degToRad((theta += 0.08)));
     theta += 0.0015;
     const y = theta;
     group.current.rotation.set(0, y, 0);
+    controls.update();
     // Continuously update the RASTER texture
     const date = new Date();
     if (date.getSeconds() !== prevSeconds) {
-      updateDataTexture(raster, size, []);
+      fetchWorldState().then(data => updateDataTexture(raster, size, data));
       prevSeconds = date.getSeconds();
     }
   });
@@ -161,9 +187,9 @@ function Mars() {
     <group ref={group}>
       <animated.mesh position={[0,0,0]}>
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
-        <meshPhongMaterial attach="material" map={mapTexture} bumpMap={bumpTexture} bumpScale={8} />
+        <meshPhongMaterial attach="material" map={mapTexture} bumpMap={bumpTexture} bumpScale={8} specular={new THREE.Color('#000000')} />
       </animated.mesh>
-      <animated.mesh position={[0,0,0]}>
+      <animated.mesh visible={showRegions} position={[0,0,0]}>
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
         <animated.meshPhongMaterial attach="material" ref={raster} map={rasterTexture} opacity={0.2} transparent />
       </animated.mesh>
@@ -196,12 +222,12 @@ function Stars() {
   )
 }
 
-function Universe() {
+function Universe({ showRegions }) {
   return (
     <Canvas className="Universe">
       <ambientLight color="white" />
-      <pointLight color="white" intensity={0.05} position={[10, 10, 10]} />
-      <Mars />
+      <pointLight color="white" intensity={0.06} position={[10, 10, 10]} />
+      <Mars showRegions={showRegions} />
       <Stars />
     </Canvas>
   );
