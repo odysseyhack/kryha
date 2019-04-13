@@ -3,7 +3,7 @@ var functions = require('../functionsDefs.json')
 function getDnaNumbers (DNA) {
   let DNAnumbers = []
   for (var i = 0; i < DNA.length; i++) {
-    DNAnumbers.push(DNA.charCodeAt(i) / 10)
+    DNAnumbers.push((DNA.charCodeAt(i) - 100) / 10)
   }
   return DNAnumbers
 }
