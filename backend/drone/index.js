@@ -71,7 +71,6 @@ async function geneticsSharing (Genetics) {
   await Genetics.announceFitness()
   await sleep.sleep(n)
 
-  await Genetics.checkIfDead()
   await Genetics.announceChildrenTokens()
   await sleep.sleep(n)
 
@@ -96,7 +95,10 @@ async function main () {
   await store.eth.createDrone(constants.PARENT1, constants.PARENT2, store.DNA)
 
   const Genetics = GeneticsFunction(store)
-  store.callback = Genetics.procreate
+  store.callback = async () => {
+    await Genetics.checkIfDead()
+    await Genetics.procreate()
+  }
 
   let geneticRoutes = require('./genetics/routes')(Genetics)
 
@@ -115,36 +117,40 @@ async function main () {
 
   let counter = 0
   while (1) {
-    if (counter % 1 === 0) {
+    if (counter % 10 === 0) {
       await geneticsSharing(Genetics)
     }
 
     await sleep.sleep(1)
 
-    if (counter % 10 === 0) {
+    if (counter % 100 === 0) {
+      await Genetics.checkIfDead()
       await Genetics.procreate()
     }
 
-    let discoveredWorld = store.eth.getDiscoverdWorldSize(store.account)
+    let discoveredWorld = await store.eth.getDiscoveredWorldSize()
+
     let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
     let rand = Math.random()
     if (rand > undiscoverd) {
-      let cor = FindNodeCheck(store.x, store.y)
+      let cor = await FindNodeCheck(store)
+
       store.x = cor.x
       store.y = cor.y
-      locate(store)
+      await locate(store)
     } else {
-      let node = FindNode(store.x, store.y, store.DNA)
+      let node = await FindNode(store.x, store.y, store.DNA)
       if (node === null && undiscoverd !== 0) {
-        let cor = FindNodeCheck(store.x, store.y)
+        let cor = await FindNodeCheck(store)
+
         store.x = cor.x
         store.y = cor.y
-        locate(store)
+        await locate(store)
       } else {
         store.fitness += node.fitness
         store.x = node.x
         store.y = node.y
-        mine(store)
+        await mine(store)
       }
     }
 

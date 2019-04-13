@@ -1,13 +1,23 @@
 async function findNodeToCheck (store) {
-  for (var ix = store.x; ix < (ix + 100); ix++) {
-    for (var iy = store.y; iy < (iy + 100); iy++) {
-      let check = await store.eth.WorldStateCheck(ix % 100, iy % 100)
-      if (check === false) {
-        return { x: ix % 100, y: iy % 100 }
-      }
+  let i = 0
+  while (true) {
+    let x = Math.round(Math.random() * 100)
+    let y = Math.round(Math.random() * 100)
+
+    let check = await store.eth.WorldStateChecked(x, y)
+
+    if (!check) {
+      return { x, y }
+    }
+
+    i++
+
+    if (i > 200) {
+      break
     }
   }
-  return null
+
+  return { x: store.x, y: store.y }
 }
 
 module.exports = findNodeToCheck
