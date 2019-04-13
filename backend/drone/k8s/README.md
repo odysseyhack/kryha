@@ -11,7 +11,7 @@ helm delete eth
 
 Ganache:
 ```
-helm install --name ganache drone/k8s/ganache.
+helm install --name ganache drone/k8s/ganache
 ```
 
 

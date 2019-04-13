@@ -97,21 +97,45 @@ async function _newAccountRich (newAccount) {
   return newAccount
 }
 
-async function addWorldState (account, x, y, air, resources, nature, water) {
-  return sendContract(account, 'world', 'addWorldState', x, y, air, resources, nature, water)
+function ethFunctions (store) {
+  async function addWorldState (x, y, air, resources, nature, water) {
+    let receipt = await sendContract(store.account, 'world', 'addWorldState', x, y, air, resources, nature, water)
+    store.updateBlockNumber(receipt.blockNumber)
+
+    return receipt
+  }
+
+  async function mineResources (x, y, air, resources, nature, water) {
+    let receipt = await sendContract(store.account, 'world', 'mineResources', x, y, air, resources, nature, water)
+    store.updateBlockNumber(receipt.blockNumber)
+
+    return receipt
+  }
+
+  async function killDrone () {
+    let receipt = await sendContract(store.account, 'drone', 'killDrone')
+    store.updateBlockNumber(receipt.blockNumber)
+
+    return receipt
+  }
+
+  async function createDrone (parent1, parent2, dna) {
+    let receipt = await sendContract(store.account, 'drone', 'createDrone', parent1, parent2, web3.utils.utf8ToHex(dna))
+    store.updateBlockNumber(receipt.blockNumber)
+
+    return receipt
+  }
+  async function getDiscoveredWorldSize (account) {
+    let receipt = await callContract(account, 'world', 'getDiscoveredWorldSize')
+    return receipt
+  }
+
+  return {
+    addWorldState, mineResources, killDrone, createDrone, getDiscoveredWorldSize
+  }
 }
 
-async function mineResources (account, x, y, air, resources, nature, water) {
-  return sendContract(account, 'world', 'mineResources', x, y, air, resources, nature, water)
-}
 
-async function killDrone (account) {
-  return sendContract(account, 'drone', 'killDrone')
-}
-
-async function createDrone (account, parent1, parent2, dna) {
-  return sendContract(account, 'drone', 'createDrone', parent1, parent2, web3.utils.utf8ToHex(dna))
-}
 
 // TODO: export contract functions
-module.exports = { newAccount, addWorldState, mineResources, killDrone, createDrone }
+module.exports = { newAccount, ethFunctions }
