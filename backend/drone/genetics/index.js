@@ -7,6 +7,7 @@ const fetch = require('node-fetch')
 const announce = require('./helper/announce')
 
 const uuidv4 = require('uuid/v4')
+const utils = require('web3-utils')
 
 module.exports = function (store) {
   return new class Genetics {
@@ -30,29 +31,28 @@ module.exports = function (store) {
 
       for (const a of result) {
         this.agents[a.address] = {
-          dna: a.dna[0], // TODO: change it being an array in future
+          dna: utils.hexToUtf8(a.dna[0]), // TODO: change it being an array in future; and not bytes
           id: a.address
         }
       }
     }
 
-    _removeAgent (id) {
-      delete this.agents[id]
+    _removeAgent (a) {
+      delete this.agents[a.id]
     }
 
-    _removeAgents (idArray) {
-      for (const id of idArray) {
-        this._removeAgent(id)
+    _removeAgents (agent) {
+      for (const a of agent) {
+        this._removeAgent(a)
       }
     }
 
     async announceFitness () {
+      console.log('Announcing fitness')
       let [, dead] = await announce('fitness', this.agents, { id: store.id, fitness: store.fitness })
       this._removeAgents(dead)
     }
 
-    // TODO: register from blockchain
-    // PUBSUB ?
     registerFitness (id, fitness) {
       this.agents[id] = {
         ...this.agents[id],
@@ -61,25 +61,29 @@ module.exports = function (store) {
       }
     }
 
+    // TODO: kill pod
     async checkIfDead () {
+      console.log('Checking if dead')
       let sortedFitness = Object.values(this.agents).sort((a, b) => a.fitness - b.fitness)
       let lastSurvivor = sortedFitness[constants.POPSIZE - constants.CHILDREN - 1]
 
-      if (lastSurvivor.fitness > store.fitness) {
+      if (lastSurvivor && lastSurvivor.fitness > store.fitness) {
         console.log(`I'm dead: ${store.id} ${store.fitness}`)
         await store.eth.killDrone()
         return false
       }
 
       // remove dead agents from list
-      let deadDrones = sortedFitness[constants.POPSIZE - constants.CHILDREN].map(d => d.id)
+      let deadDrones = sortedFitness.slice(constants.POPSIZE - constants.CHILDREN)
       this._removeAgents(deadDrones)
 
       return true
     }
 
     // Adaption of tournament selections
-    announceChildrenTokens () {
+    async announceChildrenTokens () {
+      console.log('Announcing Children tokens')
+
       this.childrenTokens = 0
       for (let attempt = 0; attempt < constants.PROCREATE_ATTEMPS; attempt++) {
         let survided = true
@@ -87,7 +91,7 @@ module.exports = function (store) {
         for (let tournament = 0; tournament < constants.TOURNAMENT_ATTACKERS; tournament++) {
           let attacker = sample(this.agents)
 
-          if (store.fitness < attacker.fitness) {
+          if (attacker && store.fitness < attacker.fitness) {
             survided = false
             break
           }
@@ -96,21 +100,25 @@ module.exports = function (store) {
         if (survided) this.childrenTokens++
       }
 
-      let [, dead] = announce('childrenTokens', this.agents, { id: store.id, childrenTokens: this.childrenTokens })
+      this.childrenTokens = 10
+
+      let [, dead] = await announce('childrenTokens', this.agents, { id: store.id, childrenTokens: this.childrenTokens })
       this._removeAgents(dead)
     }
 
-    // TODO: register from blockchain / pubsub
     registerChildrenTokens (id, childrenTokens) {
       for (let i = 0; i < childrenTokens; i++) {
         for (let j = 0; j < childrenTokens; j++) {
+          if (!this.agents[id]) return
           this.parents.push(id)
         }
       }
     }
 
-    announcePairs () {
+    async announcePairs () {
+      console.log('Announcing pairs')
       let pairs = []
+
       for (let i = 0; i < this.childrenTokens; i++) {
         let parent2
 
@@ -119,7 +127,7 @@ module.exports = function (store) {
         // remove parent after selecting
         this.parents.splice(this.parents.indexOf(parent2), 1)
 
-        pairs.push([{
+        pairs.push({
           id: uuidv4(),
           parent1: {
             id: store.id,
@@ -127,29 +135,50 @@ module.exports = function (store) {
           },
           parent2: {
             id: parent2,
-            DNA: ''
+            DNA: this.agents[parent2].dna
           }
-        }])
+        })
       }
 
-      let [, dead] = announce('pairs', this.agents, { pairs })
+      if (this.pairs.length === 0) {
+        return
+      }
+
+      let [, dead] = await announce('pairs', this.agents, { pairs })
       this._removeAgents(dead)
+
+      // Register your own pairs too
+      this.registerPairs(pairs)
     }
 
     registerPairs (pairs) {
-      this.pairs = [...this.pairs, pairs]
+      this.pairs = [...this.pairs, ...pairs]
+
+      if (this.pairs.length > 0) {
+        this.procreate()
+      }
     }
 
     procreate () {
+      console.log('Procreating')
+      if (this.pairs.length === 0) return
+
       let sortedPairs = Object.values(this.pairs).sort((a, b) => a.id - b.id)
       let lastSurvingPair = sortedPairs[constants.CHILDREN - 1]
       let yourPairs = this.pairs.filter(p => p.parent1.id === store.id)
-      let survivingPairs = yourPairs.filter(p => p.id > lastSurvingPair)
+      let survivingPairs = yourPairs.filter(p => !lastSurvingPair || p.id > lastSurvingPair)
+
+      console.log(survivingPairs)
 
       let deployments = []
       for (const pair of survivingPairs) {
         let newDNA = this._mutation(this._binaryCrossover(pair.parent1.DNA, pair.parent2.DNA))
-        deployments.push(deployChild(newDNA, pair.parent1.id, pair.parent2.id))
+        console.log('NEW DNA, ', newDNA)
+
+        deployments.push(() => {
+          console.log('Creating new child')
+          return deployChild(newDNA, pair.parent1.id, pair.parent2.id)
+        })
       }
 
       return Promise.all(deployments)
