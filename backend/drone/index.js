@@ -29,8 +29,8 @@ class Store {
     this.id = id
     this.account = account
     this.blockNumber = null
-    this.fitness = Math.floor(Math.random() * 10000) // TODO: replace with real fitness
-    this.DNA = constants.DNA
+    this.fitness = 0
+    this.DNA = this.generetaDNA()
     this.eth = undefined
     this.x = 0
     this.y = 0
@@ -42,6 +42,14 @@ class Store {
     let World = await getContract('world')
 
     this.eth = eth.ethFunctions(this, Drone, World)
+  }
+
+  generetaDNA () {
+    let s = ''
+    for (let i = 0; i < constants.DNA_SIZE; i++) {
+      s.concat(String.fromCharCode(Math.round(Math.random() * 10)))
+    }
+    return s
   }
 
   updateBlockNumber (blockNumber) {
@@ -121,7 +129,6 @@ async function main () {
       store.y = cor.y
       locate(store)
     } else {
-      // TODO find node to Mine
       let node = FindNode(store.x, store.y, store.DNA)
       if (node === null && undiscoverd !== 0) {
         let cor = FindNodeCheck(store.x, store.y)
