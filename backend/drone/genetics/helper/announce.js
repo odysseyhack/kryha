@@ -19,7 +19,6 @@ async function announce (endpoint, actors, data) {
       body: JSON.stringify(data)
     }, 5000, 'Timeout')
       .then(async res => {
-        console.log(res.status)
         if (res.status !== 200) throw new Error('Not OK')
         let data = await res.json()
         return { success: data.success, response: true, id: actor, data }
