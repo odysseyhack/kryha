@@ -3,10 +3,9 @@ const sample = require('lodash.sample')
 const constants = require('../constants')
 const normalRandom = require('./helper/normalRandom')
 const deployChild = require('../k8s/deploy')
-const fetch = require('node-fetch')
+const fetch = require('fetch-timeout')
 const announce = require('./helper/announce')
 
-const uuidv4 = require('uuid/v4')
 const utils = require('web3-utils')
 
 module.exports = function (store) {
@@ -22,7 +21,7 @@ module.exports = function (store) {
     }
 
     async setAgents () {
-      let result = await fetch(`${constants.WORLD_URL}/drone/list/alive`)
+      let result = await fetch(`${constants.WORLD_URL}/drone/list/alive`, { method: 'get' }, 5000, 'Timout')
         .then(res => res.json())
         .catch(e => {
           console.warn('Setting failed', e)
@@ -64,7 +63,7 @@ module.exports = function (store) {
     // TODO: kill pod
     async checkIfDead () {
       console.log('Checking if dead')
-      let sortedFitness = Object.values(this.agents).sort((a, b) => a.fitness - b.fitness)
+      let sortedFitness = Object.values(this.agents).sort((a, b) => b.fitness - a.fitness)
       let lastSurvivor = sortedFitness[constants.POPSIZE - constants.CHILDREN - 1]
 
       if (lastSurvivor && lastSurvivor.fitness > store.fitness) {
@@ -100,6 +99,7 @@ module.exports = function (store) {
         if (survided) this.childrenTokens++
       }
 
+      // TODO: remove
       this.childrenTokens = 10
 
       let [, dead] = await announce('childrenTokens', this.agents, { id: store.id, childrenTokens: this.childrenTokens })
@@ -124,11 +124,13 @@ module.exports = function (store) {
 
         parent2 = sample(this.parents)
 
+        if (!parent2) continue
+
         // remove parent after selecting
         this.parents.splice(this.parents.indexOf(parent2), 1)
 
         pairs.push({
-          id: uuidv4(),
+          id: Math.floor(Math.random() * 100000000),
           parent1: {
             id: store.id,
             DNA: store.DNA
@@ -151,20 +153,16 @@ module.exports = function (store) {
 
     registerPairs (pairs) {
       this.pairs = [...this.pairs, ...pairs]
-
-      if (this.pairs.length > 0) {
-        this.procreate()
-      }
     }
 
     procreate () {
       console.log('Procreating')
       if (this.pairs.length === 0) return
 
-      let sortedPairs = Object.values(this.pairs).sort((a, b) => a.id - b.id)
+      let sortedPairs = Object.values(this.pairs).sort((a, b) => b.id - a.id)
       let lastSurvingPair = sortedPairs[constants.CHILDREN - 1]
       let yourPairs = this.pairs.filter(p => p.parent1.id === store.id)
-      let survivingPairs = yourPairs.filter(p => !lastSurvingPair || p.id > lastSurvingPair)
+      let survivingPairs = yourPairs.filter(p => !lastSurvingPair || p.id > lastSurvingPair.id)
 
       console.log(survivingPairs)
 
@@ -179,7 +177,7 @@ module.exports = function (store) {
         })
       }
 
-      return Promise.all(deployments)
+      return Promise.all(deployments.map(f => f()))
     }
 
     _binaryCrossover (DNA1, DNA2) {
