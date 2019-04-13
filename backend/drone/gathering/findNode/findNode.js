@@ -18,7 +18,6 @@ async function getWorld(){
     return await fetch(`${constants.WORLD_URL}`)
         .then(res => res.json())
         .then(res => {
-            console.log(res[1])
             return res;
         });
 }
@@ -77,7 +76,6 @@ async function findClosestNode(ownX, ownY, DNA){
     pointFitness.map(function(obj){
         if (obj.fit > maxFit) maxObj = obj;
     })
-    console.log(maxObj)
 
     return maxObj;
 }
