@@ -30,8 +30,12 @@ router.put('/point', injectPoint, async (req, res, next) => {
 
 // todo: list of points
 router.get('/', async (req, res, next) => {
-  const points = await Point.find().exec()
-  return res.status(200).json(points)
+  try {
+    const points = await Point.find().exec()
+    return res.status(200).json(points)
+  } catch (error) {
+    next(error)
+  }
 })
 
 export default router
