@@ -114,12 +114,16 @@ function ethFunctions (store, Drone, World) {
 
     return receipt
   }
-  async function getDiscoveredWorldSize (account) {
-    return callContract(account, 'world', 'getDiscoveredWorldSize')
+  async function getDiscoveredWorldSize () {
+    return callContract('world', 'getDiscoveredWorldSize')
+  }
+
+  async function WorldStateChecked (x, y) {
+    return callContract('world', 'WorldStateChecked')
   }
 
   return {
-    addWorldState, mineResources, killDrone, createDrone, getDiscoveredWorldSize
+    addWorldState, mineResources, killDrone, createDrone, getDiscoveredWorldSize, WorldStateChecked
   }
 }
 

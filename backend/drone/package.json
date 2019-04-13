@@ -16,7 +16,9 @@
     "standard": "^12.0.1"
   },
   "dependencies": {
+    "body-parser": "^1.18.3",
     "express": "^4.16.4",
+    "fetch-timeout": "0.0.2",
     "kubernetes-client": "^6.12.1",
     "lodash.sample": "^4.2.1",
     "node-fetch": "^2.3.0",

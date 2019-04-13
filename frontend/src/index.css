@@ -22,7 +22,7 @@ button {
   border-radius: 5px;
 }
 
-button:hover, button:focus {
+button:hover {
   opacity: 1;
   color: #fff;
 }
