@@ -84,11 +84,11 @@ const COLORS = {
  * @param {*} worldState a width x height x 3 array for the RGB color for each x,y position
  */
 function updateDataTexture(textRef, size, worldState) {
-  if (!worldState || worldState.length === 0) return;
+  if (!worldState) return;
   for ( var i = 0; i < size; i ++ ) {
     const obj = worldState[i];
-    delete obj.x
-    delete obj.y
+    delete obj.x;
+    delete obj.y;
     const bestType = Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b);
     const color = COLORS[bestType];
     var stride = i * 3;
@@ -173,9 +173,9 @@ function Mars({ showRegions }) {
   // Continuously update the GL render
   useRender(() => {
     // const y = Math.sin(THREE.Math.degToRad((theta += 0.08)));
-    // theta += 0.0015;
-    // const y = theta;
-    // group.current.rotation.set(0, y, 0);
+    theta += 0.0015;
+    const y = theta;
+    group.current.rotation.set(0, y, 0);
     controls.update();
     // Continuously update the RASTER texture
     const date = new Date();
@@ -234,7 +234,7 @@ function Universe({ showRegions }) {
   return (
     <Canvas
       className="Universe"
-      orthographic={true}
+      // orthographic={true}
       onMouseDown={() => document.body.style.cursor = "grabbing"}
       onMouseUp={() => document.body.style.cursor = "grab"}
     >
