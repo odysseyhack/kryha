@@ -10,7 +10,7 @@ module.exports = function (Genetics) {
   })
 
   router.post('/fitness', (req, res) => {
-    console.log('Fitness registration', req)
+    console.log('Fitness registration')
     let { id, fitness } = req.body
     Genetics.registerFitness(id, fitness)
 
