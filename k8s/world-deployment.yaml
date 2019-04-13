@@ -24,10 +24,12 @@ spec:
         - run
         - dev
         env:
+        - name: CONTRACTS_URL
+          value: http://contracts:9002
         - name: ETHEREUM_URL
           value: ws://ethereum-node:8545
         - name: MONGO_URL
-          value: mongodb://world-mongo:27017/world
+          value: mongodb://mongo:27017/world
         image: world
         name: world
         ports:
