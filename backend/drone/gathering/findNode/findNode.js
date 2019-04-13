@@ -55,84 +55,6 @@ function calculateFunctionScore(score, func, point){
     return b - a
 }
 
-
-
-// function calculateFunctionScore(score, func, point){
-//     let totalResources = point.water + point.air + point.resources + point.nature;
-//     let calc = 0;
-//     let count = 0;
-//     // console.log(normalizeVector(point));
-//     nomFunc = func
-//     nomPoint = point
-//     if (score === 0){
-//         return 0;
-//     }
-//     if (nomFunc.air < 0){
-//         if (nomPoint.air === 0 ){
-//             calc += nomPoint.air - (nomFunc.air * score)
-//         } else {
-//             calc += nomPoint.air - (nomFunc.air * score)
-//         }
-//         count += 1;
-//     } else if (nomFunc.air > 0) {
-//         if (nomPoint.air === 0) {
-//             calc += nomPoint.air + (nomFunc.air * score)
-//         } else {
-//             calc += nomPoint.air + (nomFunc.air * score)
-//         }
-//         count += 1;
-//     }
-//     if (nomFunc.resources < 0){
-//         if (nomPoint.resources === 0){
-//             calc += nomPoint.resources - (nomFunc.resources * score)
-//         } else {
-//             calc += nomPoint.resources - (nomFunc.resources * score)
-//         }
-//         count += 1;
-//     } else if (nomFunc.resources > 0) {
-//         if (nomPoint.resources === 0){
-//             calc += nomPoint.resources + (nomFunc.resources * score)
-//         } else {
-//             calc += nomPoint.resources + (nomFunc.resources * score)
-//         }
-//         count += 1;
-//     }
-//     if (func.water < 0){
-//         if (point.water == 0) {
-//             calc -= 1;
-//         } else {
-//             calc += func.water * score / point.water
-//         }
-//         count += 1;
-//     } else if (func.water > 0) {
-//         if (point.water == 0) {
-//             calc += 1;
-//         } else {
-//             calc += func.water * score / point.water
-//         }
-//         count += 1;
-//     }
-//     if (func.nature < 0){
-//         if (point.nature == 0){
-//             calc -= 1;
-//         } else {
-//             calc += func.nature * score / point.nature
-
-//         }
-//         count += 1;
-//     } else if (func.nature > 0) {
-//         if (point.nature == 0){
-//             calc += 1;
-//         } else {
-//             calc += func.nature * score / point.nature
-//         }
-//         count += 1;
-//     }
-//     // console.log(calc)
-//     let fit = calc / count;
-//     return fit;
-// }
-
 async function findClosestNode(ownX, ownY, DNA){
     const worldPoints = await getWorld();
     const DNAnumbers = getDnaNumbers(DNA);
@@ -158,6 +80,6 @@ async function findClosestNode(ownX, ownY, DNA){
 }
 
 console.log(findClosestNode(10, 10, 'asdsdsds'))
-console.log(calculateFunctionScore(1, {air: 0, resources: 0, water: -100, nature: 200}, {air: 0, resources: 0, water: 300, nature: 1000000}))
+console.log(calculateFunctionScore(1, {air: 0, resources: 0, water: -100, nature: 200}, {air: 0, resources: 0, water: 300, nature: 100}))
 
 module.exports = findClosestNode
