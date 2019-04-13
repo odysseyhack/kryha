@@ -22,6 +22,8 @@ class Store {
   updateBlockNumber (blockNumber) {
     this.blockNumber = blockNumber
 
+    // console.log(this.blockNumber)
+
     // TODO: call callback when a certain number has been reached
   }
 }
@@ -29,11 +31,13 @@ class Store {
 async function main () {
   let account = await eth.newAccount()
 
+  // create the store
+  let store = Store(account.address, account)
+
   // Register on k8s and blockchain
   register(account.address)
-  eth.createDrone(account, PARENT1, PARENT2, DNA)
+  store.eth.createDrone(account, PARENT1, PARENT2, DNA)
 
-  let store = Store(account.address, account)
   const Genetics = GeneticsFunction(store)
   let geneticRoutes = require('./genetics/routes')(Genetics)
 
