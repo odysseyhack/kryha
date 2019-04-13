@@ -14,7 +14,7 @@ function calculateDistanceAreaVector (vec1, vec2) {
 }
 
 async function getWorld () {
-  return await fetch(`${constants.WORLD_URL}/discoverd`)
+  return fetch(`${constants.WORLD_URL}/discoverd`)
     .then(res => res.json())
     .then(res => {
       return res
