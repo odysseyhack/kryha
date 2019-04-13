@@ -23,6 +23,10 @@ const pointSchema = new Schema({
   water: {
     type: mongoose.SchemaTypes.Number,
     default: () => Math.floor(Math.random() * 100)
+  },
+  discovered: {
+    type: mongoose.SchemaTypes.Boolean,
+    default: false
   }
 })
 
