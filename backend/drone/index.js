@@ -1,5 +1,15 @@
 const express = require('express')
+const bodyParser = require('body-parser')
 const app = express()
+
+app.use(bodyParser.json({
+  limit: '100mb'
+}))
+app.use(bodyParser.urlencoded({
+  extended: true,
+  limit: '100mb'
+}))
+
 const fetch = require('node-fetch')
 
 const register = require('./k8s/register')
@@ -15,7 +25,7 @@ class Store {
     this.id = id
     this.account = account
     this.blockNumber = null
-    this.fitness = 0
+    this.fitness = Math.floor(Math.random() * 10000) // TODO: replace with real fitness
     this.DNA = constants.DNA
     this.eth = undefined
     this.x = 0
@@ -36,6 +46,15 @@ class Store {
 
     // TODO: call callback when a certain number has been reached
   }
+}
+
+async function geneticsProcess (Genetics) {
+  await Genetics.setAgents()
+  await Genetics.announceFitness()
+  // await Genetics.checkIfDead()
+  // await Genetics.announceChildrenTokens()
+  // await Genetics.announcePairs()
+  // await Genetics.procreate()
 }
 
 async function getContract (name) {
@@ -62,15 +81,6 @@ async function main () {
     res.send('Hello, World!')
   })
 
-  fetch(`${constants.WORLD_URL}/drone/alive`, {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  }).then(res => res.json())
-    .catch(e => ({ success: false, error: e }))
-    .then(data => console.log('ALIVE: ', data))
-
   app.listen(constants.PORT, (err) => {
     if (err) {
       console.err(err.stack)
@@ -79,28 +89,30 @@ async function main () {
     }
   })
 
-  while (1) {
-    let discoveredWorld = store.eth.getDiscoverdWorldSize(store.account)
-    let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
-    let rand = Math.random()
-    if (rand > undiscoverd) {
-      let cor = FindNodeCheck(store.x, store.y)
-      store.x = cor.x
-      store.y = cor.y
-      // TODO add resources with eth function
-    } else {
-      // TODO find node to Mine
-      let node = FindNode(store.x, store.y, store.DNA)
-      if (node === null) {
-        let cor = FindNodeCheck(store.x, store.y)
-        store.x = cor.x
-        store.y = cor.y
-      } else {
-        // Node already has the x and y of the node it will mine
-        // TODO make function to call every function with the node
-      }
-    }
-  }
+  geneticsProcess(Genetics)
+
+  // while (1) {
+  //   let discoveredWorld = store.eth.getDiscoverdWorldSize(store.account)
+  //   let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
+  //   let rand = Math.random()
+  //   if (rand > undiscoverd) {
+  //     let cor = FindNodeCheck(store.x, store.y)
+  //     store.x = cor.x
+  //     store.y = cor.y
+  //     // TODO add resources with eth function
+  //   } else {
+  //     // TODO find node to Mine
+  //     let node = FindNode(store.x, store.y, store.DNA)
+  //     if (node === null) {
+  //       let cor = FindNodeCheck(store.x, store.y)
+  //       store.x = cor.x
+  //       store.y = cor.y
+  //     } else {
+  //       // Node already has the x and y of the node it will mine
+  //       // TODO make function to call every function with the node
+  //     }
+  //   }
+  // }
 }
 
 main()

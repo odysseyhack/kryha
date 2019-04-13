@@ -20,6 +20,23 @@ export async function setup () {
     const worldContract = new web3.eth.Contract(worldJsonInterface.abi, worldJsonInterface.address)
     const droneContract = new web3.eth.Contract(droneJsonInterface.abi, droneJsonInterface.address)
 
+    // got found resources event, update point in mongo
+    registerListener(worldContract, 'E_FoundResources', {}, async (event) => {
+      const { drone: address, x, y } = event.returnValues
+      // find point
+      const point = await Point.findOne({ x, y }).exec()
+      // update point
+      point.set('discovered', true)
+      await point.save()
+      console.info(`updated point ${x},${y}`)
+      // update drone involved
+      const drone = await Drone.findOne({ address }).exec()
+      drone.set('x', x)
+      drone.set('y', y)
+      await drone.save()
+      console.info(`updated drone ${address}`)
+    })
+
     // got mine resources event, update point in mongo
     registerListener(worldContract, 'E_MineResources', {}, async (event) => {
       const { drone: address, x, y, air, resources, nature, water } = event.returnValues
@@ -32,7 +49,7 @@ export async function setup () {
       point.set('water', Number(point.water) + Number(water))
       await point.save()
       console.info(`updated point ${x},${y}`)
-      // todo: update drone involved
+      // update drone involved
       const drone = await Drone.findOne({ address }).exec()
       drone.set('x', x)
       drone.set('y', y)
