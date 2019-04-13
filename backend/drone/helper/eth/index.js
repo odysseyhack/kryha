@@ -106,21 +106,21 @@ function ethFunctions (store) {
   }
 
   async function mineResources (x, y, air, resources, nature, water) {
-    let receipt = sendContract(store.account, 'world', 'mineResources', x, y, air, resources, nature, water)
+    let receipt = await sendContract(store.account, 'world', 'mineResources', x, y, air, resources, nature, water)
     store.updateBlockNumber(receipt.blockNumber)
 
     return receipt
   }
 
   async function killDrone () {
-    let receipt = sendContract(store.account, 'drone', 'killDrone')
+    let receipt = await sendContract(store.account, 'drone', 'killDrone')
     store.updateBlockNumber(receipt.blockNumber)
 
     return receipt
   }
 
   async function createDrone (parent1, parent2, dna) {
-    let receipt = sendContract(store.account, 'drone', 'createDrone', parent1, parent2, web3.utils.utf8ToHex(dna))
+    let receipt = await sendContract(store.account, 'drone', 'createDrone', parent1, parent2, web3.utils.utf8ToHex(dna))
     store.updateBlockNumber(receipt.blockNumber)
 
     return receipt
