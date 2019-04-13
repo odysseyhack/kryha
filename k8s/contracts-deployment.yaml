@@ -30,7 +30,7 @@ spec:
           value: http
         - name: MONGO_URL
           value: mongodb://mongo:27017/contracts
-        image: contracts
+        image: kryha/contracts
         name: contracts
         ports:
         - containerPort: 9002

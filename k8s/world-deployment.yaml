@@ -30,7 +30,7 @@ spec:
           value: ws://ethereum-node:8545
         - name: MONGO_URL
           value: mongodb://mongo:27017/world
-        image: world
+        image: kryha/world
         name: world
         ports:
         - containerPort: 9001
