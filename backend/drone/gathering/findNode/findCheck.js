@@ -3,7 +3,7 @@ function findNodeToCheck (store) {
     for (var iy = store.y; iy < (iy + 50); iy++) {
       let check = store.eth.WorldStateCheck(ix % 50, iy % 50)
       if (check === false) {
-        return (ix % 50, iy % 50)
+        return { x: ix % 50, y: iy % 50 }
       }
     }
   }
