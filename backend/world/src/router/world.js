@@ -37,4 +37,22 @@ router.get('/', async (req, res, next) => {
   }
 })
 
+router.get('/undiscovered', async (req, res, next) => {
+  try {
+    const points = await Point.find({ discovered: false }, { air: 1, resources: 1, nature: 1, water: 1, _id: 0, x: 1, y: 1 }).sort({ y: 1, x: 1 }).exec()
+    return res.status(200).json(points)
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.get('/discovered', async (req, res, next) => {
+  try {
+    const points = await Point.find({ discovered: true }, { air: 1, resources: 1, nature: 1, water: 1, _id: 0, x: 1, y: 1 }).sort({ y: 1, x: 1 }).exec()
+    return res.status(200).json(points)
+  } catch (error) {
+    next(error)
+  }
+})
+
 export default router

@@ -89,6 +89,8 @@ function updateDataTexture(textRef, size, worldState) {
   if (!worldState) return;
   for ( var i = 0; i < size; i ++ ) {
     const obj = worldState[i];
+    delete obj.x
+    delete obj.y
     const bestType = Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b);
     const color = COLORS[bestType];
     var stride = i * 3;
