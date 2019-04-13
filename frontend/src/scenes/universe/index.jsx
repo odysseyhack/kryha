@@ -1,11 +1,15 @@
 import * as THREE from 'three/src/Three';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 // A THREE.js React renderer, see: https://github.com/drcmda/react-three-fiber
-import { Canvas, useRender } from 'react-three-fiber';
+import { Canvas, useRender, useThree } from 'react-three-fiber';
 // A React animation lib, see: https://github.com/react-spring/react-spring
 import { useSpring, animated } from 'react-spring/three';
+import ThreeOrbitControls from 'three-orbit-controls';
 import max from 'lodash/max';
 import './index.css';
+
+const OrbitControls = ThreeOrbitControls(THREE);
+
 
 // function Octahedron() {
 //   const [active, setActive] = useState(false)
@@ -148,12 +152,23 @@ function Mars({ showRegions }) {
 
   let prevSeconds = 0;
 
+  // useThree(({ scene, camera }) => {
+  //   camera.position.set(1, 0, -10)
+  //   camera.lookAt(new THREE.Vector3())
+  //   let controls = new OrbitControls(camera);
+  //   controls.update();
+  // });
+
+  const { camera } = useThree();
+  let controls = new OrbitControls(camera);
+
   // Continuously update the GL render
   useRender(() => {
     // const y = Math.sin(THREE.Math.degToRad((theta += 0.08)));
     theta += 0.0015;
     const y = theta;
     group.current.rotation.set(0, y, 0);
+    controls.update();
     // Continuously update the RASTER texture
     const date = new Date();
     if (date.getSeconds() !== prevSeconds) {
@@ -172,7 +187,7 @@ function Mars({ showRegions }) {
     <group ref={group}>
       <animated.mesh position={[0,0,0]}>
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
-        <meshPhongMaterial attach="material" map={mapTexture} bumpMap={bumpTexture} bumpScale={8} />
+        <meshPhongMaterial attach="material" map={mapTexture} bumpMap={bumpTexture} bumpScale={8} specular={new THREE.Color('#000000')} />
       </animated.mesh>
       <animated.mesh visible={showRegions} position={[0,0,0]}>
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />

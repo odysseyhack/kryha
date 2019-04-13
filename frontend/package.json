@@ -10,7 +10,8 @@
     "react-spring": "^8.0.19",
     "react-three-fiber": "^2.0.4",
     "react-three-renderer": "^3.2.4",
-    "three": "^0.103.0"
+    "three": "^0.103.0",
+    "three-orbit-controls": "^82.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
