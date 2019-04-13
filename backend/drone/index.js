@@ -133,14 +133,16 @@ async function main () {
     let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
     let rand = Math.random()
     if (rand > undiscoverd) {
-      let cor = await FindNodeCheck(store.x, store.y)
+      let cor = await FindNodeCheck(store)
+
       store.x = cor.x
       store.y = cor.y
       await locate(store)
     } else {
       let node = await FindNode(store.x, store.y, store.DNA)
       if (node === null && undiscoverd !== 0) {
-        let cor = await FindNodeCheck(store.x, store.y)
+        let cor = await FindNodeCheck(store)
+
         store.x = cor.x
         store.y = cor.y
         await locate(store)

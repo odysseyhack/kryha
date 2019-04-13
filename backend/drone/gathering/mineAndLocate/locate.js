@@ -4,7 +4,7 @@ const { URL, URLSearchParams } = require('url')
 
 async function getPoint (x, y) {
   let param = { x: x, y: y }
-  let url = new URL(`${constants.WORLD_URL}/point/`)
+  let url = new URL(`${constants.WORLD_URL}/world/point/`)
   url.search = new URLSearchParams(param)
   return fetch(url)
     .then(res => res.json())
