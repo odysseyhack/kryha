@@ -3,10 +3,6 @@ pragma solidity ^0.5.0;
 contract Drone{
 
     address WorldContract;
-    address parent1;
-    address parent2;
-    bytes32[] dna;
-    uint fitness;
 
     event NewDrone(address indexed drone, address parent1, address parent2, bytes32 dna);
     event DroneDies(address indexed drone);
