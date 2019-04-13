@@ -6,6 +6,9 @@ contract World {
     uint xSize;
     uint ySize;
 
+    uint private WorldSize;
+    uint private DiscoveredNodes;
+
     int public WorldAir;
     int public WorldResources;
     int public WorldNature;
@@ -31,6 +34,8 @@ contract World {
         WorldResources = 0;
         WorldNature = 0;
         WorldWater = 0;
+        WorldSize = _xSize * _ySize;
+        DiscoveredNodes = 0;
     }
 
     function transformCoordinates(uint _x, uint _y) internal view returns (uint){
@@ -39,12 +44,15 @@ contract World {
     }
 
     function addWorldState( uint _x, uint _y, int _air, int _resources, int _nature, int _water) external {
+        
         uint place = transformCoordinates(_x, _y);
+        require(getWorldState[place].exists == false, "WorldState already discoverd");
         getWorldState[place] = WorldState(_air, _resources, _nature, _water, true);
         WorldAir += _air;
         WorldResources += _resources;
         WorldNature += _nature;
         WorldWater += _water;
+        DiscoveredNodes += 1;
         emit E_FoundResources(_x, _y, _air, _resources, _nature, _water);
     }
 
@@ -69,6 +77,10 @@ contract World {
         WorldNature += newNature;
         WorldWater += newWater;
         emit E_MineResources(_x, _y, _air, _resources, _nature, _water);
+    }
+
+    function getDiscoveredWorldSize() external view returns (uint, uint) {
+        return (DiscoveredNodes, WorldSize);
     }
 
 }

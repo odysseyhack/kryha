@@ -125,11 +125,18 @@ function ethFunctions (store) {
 
     return receipt
   }
+  async function getDiscoveredWorldSize (account) {
+    let receipt = await callContract(account, 'world', 'getDiscoveredWorldSize')
+    store.updateBlockNumber(receipt.blockNumber)
+    return receipt
+  }
 
   return {
-    addWorldState, mineResources, killDrone, createDrone
+    addWorldState, mineResources, killDrone, createDrone, getDiscoveredWorldSize
   }
 }
+
+
 
 // TODO: export contract functions
 module.exports = { newAccount, ethFunctions }
