@@ -18,12 +18,12 @@ async function announce (endpoint, actors, data) {
       },
       body: JSON.stringify(data)
     }, 5000, 'Timeout')
-      .then(res => {
+      .then(async res => {
+        console.log(res.status)
         if (res.status !== 200) throw new Error('Not OK')
-        return res.json()
+        return { success: data.success, response: true, id: actor, data: await res.json() }
       })
       .catch(e => ({ success: false, response: false, id: actor, error: e }))
-      .then(data => ({ success: data.success, response: true, id: actor, data }))
     )
   }
 
