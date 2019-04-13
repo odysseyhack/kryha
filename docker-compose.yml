@@ -6,21 +6,34 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - ./backend/world/src:/usr/src/app/src
-      - ./backend/ethereum/build/contracts:/ethereum/build/contracts
     environment:
-      - MONGO_URL=mongodb://world-mongo:27017/world
+      - MONGO_URL=mongodb://mongo:27017/world
       - ETHEREUM_URL=ws://ethereum-node:8545
     command: 'npm run dev'
     ports:
       - '9001:9001'
     depends_on:
-      - world-mongo
       - ethereum-node
+      - mongo
+      - contracts
 
-  world-mongo:
+  contracts:
+    build:
+      context: ./backend/ethereum/
+      dockerfile: ./Dockerfile
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/contracts
+      - ETHEREUM_PROTOCOL=http
+      - ETHEREUM_HOST=ethereum-node
+    command: 'npm run start'
+    ports:
+      - '9002:9002'
+    depends_on:
+      - ethereum-node
+      - mongo
+
+  mongo:
     image: mongo:4.0.6
-    volumes:
-      - world-mongo-data:/data/db
     ports:
       - 27017:27017
 
@@ -28,6 +41,3 @@ services:
     image: trufflesuite/ganache-cli:v6.4.2
     ports:
       - 8545:8545
-
-volumes:
-  world-mongo-data:
