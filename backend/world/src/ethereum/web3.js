@@ -6,7 +6,10 @@ import Drone from '../mongoose/drone.js'
 
 const web3 = new Web3(Web3.providers.WebsocketProvider(constants.ETHEREUM_URL))
 
-export const registerListener = (contract, MyEvent, options, callback) => contract.events[MyEvent](options, callback)
+export const registerListener = (contract, MyEvent, options, callback) => {
+  console.info(`added ${MyEvent} listener`)
+  return contract.events[MyEvent](options, callback)
+}
 
 export async function setup () {
   const { data: worldJsonInterface } = await axios.get(`${constants.CONTRACTS_URL}/world`)
