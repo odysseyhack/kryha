@@ -3,6 +3,7 @@ module.exports = {
   CHILDREN: 10,
   PROCREATE_ATTEMPS: 5,
   TOURNAMENT_ATTACKERS: 1,
+  DNA_SIZE: 7,
   MUTATION_RATE: parseFloat(process.env.MUTATION_RATE) || 0.01,
   MINUS_CHANCE: parseFloat(process.env.MINUS_CHANCE) || 0.5,
   PORT: Number(process.env.PORT) || 3000,
