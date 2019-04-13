@@ -4,11 +4,9 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Canvas, useRender, useThree } from 'react-three-fiber';
 // A React animation lib, see: https://github.com/react-spring/react-spring
 import { useSpring, animated } from 'react-spring/three';
-import ThreeOrbitControls from 'three-orbit-controls';
+import OrbitControls from 'three-orbitcontrols';
 import max from 'lodash/max';
 import './index.css';
-
-const OrbitControls = ThreeOrbitControls(THREE);
 
 
 // function Octahedron() {
@@ -86,9 +84,11 @@ const COLORS = {
  * @param {*} worldState a width x height x 3 array for the RGB color for each x,y position
  */
 function updateDataTexture(textRef, size, worldState) {
-  if (!worldState) return;
+  if (!worldState || worldState.length === 0) return;
   for ( var i = 0; i < size; i ++ ) {
     const obj = worldState[i];
+    delete obj.x
+    delete obj.y
     const bestType = Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b);
     const color = COLORS[bestType];
     var stride = i * 3;
@@ -152,22 +152,30 @@ function Mars({ showRegions }) {
 
   let prevSeconds = 0;
 
-  // useThree(({ scene, camera }) => {
-  //   camera.position.set(1, 0, -10)
-  //   camera.lookAt(new THREE.Vector3())
-  //   let controls = new OrbitControls(camera);
-  //   controls.update();
-  // });
+  const { gl, scene, camera } = useThree();
+  const controls = new OrbitControls(camera, gl.domElement);
+  controls.enableZoom = true;
+  controls.addEventListener('change', () => gl.render(scene, camera));
 
-  const { camera } = useThree();
-  let controls = new OrbitControls(camera);
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    gl.setSize(window.innerWidth - 40, window.innerHeight - 40);
+  }
+
+  useEffect(() => {
+    window.addEventListener('resize', onWindowResize, false);
+    return () => {
+      window.removeEventListener('resize', onWindowResize, false);
+    };
+  }, [0]);
 
   // Continuously update the GL render
   useRender(() => {
     // const y = Math.sin(THREE.Math.degToRad((theta += 0.08)));
-    theta += 0.0015;
-    const y = theta;
-    group.current.rotation.set(0, y, 0);
+    // theta += 0.0015;
+    // const y = theta;
+    // group.current.rotation.set(0, y, 0);
     controls.update();
     // Continuously update the RASTER texture
     const date = new Date();
@@ -224,7 +232,12 @@ function Stars() {
 
 function Universe({ showRegions }) {
   return (
-    <Canvas className="Universe">
+    <Canvas
+      className="Universe"
+      orthographic={true}
+      onMouseDown={() => document.body.style.cursor = "grabbing"}
+      onMouseUp={() => document.body.style.cursor = "grab"}
+    >
       <ambientLight color="white" />
       <pointLight color="white" intensity={0.06} position={[10, 10, 10]} />
       <Mars showRegions={showRegions} />
