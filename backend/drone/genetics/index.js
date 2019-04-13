@@ -140,9 +140,7 @@ module.exports = function (store) {
         })
       }
 
-      if (this.pairs.length === 0) {
-        return
-      }
+      if (pairs.length === 0) return
 
       let [, dead] = await announce('pairs', this.agents, { pairs })
       this._removeAgents(dead)
