@@ -16,13 +16,15 @@ class Store {
     this.id = id
     this.account = account
     this.blockNumber = null
+    this.fitness = 0
+    this.DNA = DNA
     this.eth = eth.ethFunctions(this)
   }
 
   updateBlockNumber (blockNumber) {
     this.blockNumber = blockNumber
 
-    // console.log(this.blockNumber)
+    console.log(this.blockNumber)
 
     // TODO: call callback when a certain number has been reached
   }
