@@ -21,7 +21,8 @@ async function announce (endpoint, actors, data) {
       .then(async res => {
         console.log(res.status)
         if (res.status !== 200) throw new Error('Not OK')
-        return { success: data.success, response: true, id: actor, data: await res.json() }
+        let data = await res.json()
+        return { success: data.success, response: true, id: actor, data }
       })
       .catch(e => ({ success: false, response: false, id: actor, error: e }))
     )
