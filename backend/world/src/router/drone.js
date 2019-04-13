@@ -6,7 +6,7 @@ const router = express.Router()
 router.param('address', async (req, res, next, address) => {
   try {
     const drone = await Drone.findOne({ address }).exec()
-    if (!drone) { return res.status(404).send('Drone Not Found') }
+    if (!drone) { return res.status(404).json({ success: false, message: 'Drone Not Found' }) }
     res.locals.drone = drone
     next()
   } catch (error) {
@@ -28,7 +28,7 @@ router.get('/', async (req, res, next) => {
 })
 
 // get list of all alive drones
-router.get('/alive', async (req, res, next) => {
+router.get('/list/alive', async (req, res, next) => {
   try {
     const drones = await Drone.find({ alive: true }).exec()
     return res.status(200).json(drones)
@@ -38,7 +38,7 @@ router.get('/alive', async (req, res, next) => {
 })
 
 // get list of all dead drones
-router.get('/dead', async (req, res, next) => {
+router.get('/list/dead', async (req, res, next) => {
   try {
     const drones = await Drone.find({ alive: false }).exec()
     return res.status(200).json(drones)
