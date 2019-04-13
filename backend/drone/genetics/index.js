@@ -42,7 +42,7 @@ module.exports = function (store) {
 
       if (lastSurvivor.fitness > store.fitness) {
         console.log(`I'm dead: ${store.id} ${store.fitness}`)
-        await store.eth.killDrone(store.account)
+        await store.eth.killDrone()
         return false
       }
 

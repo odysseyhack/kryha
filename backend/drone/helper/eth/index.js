@@ -1,56 +1,14 @@
 const Web3 = require('web3')
 
-// TODO: add abi
-const DroneABI = require('../../contracts/Drone.json')
-const WorldABI = require('../../contracts/World.json')
-
-const DroneAddress = process.env.DRONE_ADDRESS
-const WorldAddress = process.env.WORLD_ADDRESS
-
-const RPC = process.env.APP_RPC || 'http://localhost:8545'
-
-const provider = new Web3.providers.HttpProvider(RPC)
+const constants = require('../../constants')
+const provider = new Web3.providers.HttpProvider(constants.ETHEREUM_URL)
 const web3 = new Web3(provider)
-
-const TRANSFERRED_AMOUNT = Number(process.env.TRANSFERRED_AMOUNT) || 1000000000
-
-function loadContract (contractName) {
-  switch (contractName) {
-    case 'drone':
-      return new web3.eth.Contract(DroneABI.abi, DroneAddress)
-    case 'world':
-      return new web3.eth.Contract(WorldABI.abi, WorldAddress)
-    default:
-      throw new Error('Contract not defined')
-  }
-}
 
 async function sendTx (account, tx) {
   const gas = await web3.eth.estimateGas(tx)
   let signedTx = await account.signTransaction({ ...tx, gas })
 
   return web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-}
-
-async function sendContract (account, contractName, method, ...args) {
-  let contract = loadContract(contractName)
-
-  const tx = {
-    to: contract.options.address,
-    from: account.address,
-    data: contract.methods[method](...args).encodeABI(),
-    nonce: await web3.eth.getTransactionCount(account.address),
-    value: 0
-  }
-
-  return sendTx(account, tx)
-}
-
-function callContract (account, contractName, method, ...args) {
-  let contract = loadContract(contractName)
-
-  method = contract.methods[method](...args)
-  return method.call({ from: account.address })
 }
 
 async function newAccount () {
@@ -72,7 +30,7 @@ async function _newAccountPersonal (newAccount) {
   const tx = {
     to: newAccount.address,
     from: rich,
-    value: TRANSFERRED_AMOUNT
+    value: constants.TRANSFERRED_AMOUNT
   }
 
   await web3.eth.personal.sendTransaction(tx, '')
@@ -82,60 +40,88 @@ async function _newAccountPersonal (newAccount) {
 
 async function _newAccountRich (newAccount) {
   // Owner account should also be rich
-  const OWNER_PRIVATE_KEY = process.env.OWNER_PRIVATE_KEY || '0x735bf515f3a8fc16aa634574dd4bb2bf2499ea924f461c4f620403a1e45b60fe'
-  const richAccount = web3.eth.accounts.privateKeyToAccount(OWNER_PRIVATE_KEY)
+  const richAccount = web3.eth.accounts.privateKeyToAccount(constants.OWNER_PRIVATE_KEY)
 
   const tx = {
     to: newAccount.address,
     from: richAccount.address,
     nonce: await web3.eth.getTransactionCount(richAccount.address),
-    value: TRANSFERRED_AMOUNT
+    value: constants.TRANSFERRED_AMOUNT
   }
 
-  await sendTx(OWNER_PRIVATE_KEY, tx)
+  await sendTx(constants.OWNER_PRIVATE_KEY, tx)
 
   return newAccount
 }
 
-function ethFunctions (store) {
+function ethFunctions (store, Drone, World) {
+  function loadContract (contractName) {
+    switch (contractName) {
+      case 'drone':
+        return new web3.eth.Contract(Drone.abi, Drone.address)
+      case 'world':
+        return new web3.eth.Contract(World.abi, World.address)
+      default:
+        throw new Error('Contract not defined')
+    }
+  }
+
+  async function sendContract (contractName, method, ...args) {
+    let contract = loadContract(contractName)
+
+    const tx = {
+      to: contract.options.address,
+      from: store.account.address,
+      data: contract.methods[method](...args).encodeABI(),
+      nonce: await web3.eth.getTransactionCount(store.account.address),
+      value: 0
+    }
+
+    return sendTx(store.account, tx)
+  }
+
+  function callContract (contractName, method, ...args) {
+    let contract = loadContract(contractName)
+
+    method = contract.methods[method](...args)
+    return method.call({ from: store.account.address })
+  }
+
   async function addWorldState (x, y, air, resources, nature, water) {
-    let receipt = await sendContract(store.account, 'world', 'addWorldState', x, y, air, resources, nature, water)
+    let receipt = await sendContract('world', 'addWorldState', x, y, air, resources, nature, water)
     store.updateBlockNumber(receipt.blockNumber)
 
     return receipt
   }
 
   async function mineResources (x, y, air, resources, nature, water) {
-    let receipt = await sendContract(store.account, 'world', 'mineResources', x, y, air, resources, nature, water)
+    let receipt = await sendContract('world', 'mineResources', x, y, air, resources, nature, water)
     store.updateBlockNumber(receipt.blockNumber)
 
     return receipt
   }
 
   async function killDrone () {
-    let receipt = await sendContract(store.account, 'drone', 'killDrone')
+    let receipt = await sendContract('drone', 'killDrone')
     store.updateBlockNumber(receipt.blockNumber)
 
     return receipt
   }
 
   async function createDrone (parent1, parent2, dna) {
-    let receipt = await sendContract(store.account, 'drone', 'createDrone', parent1, parent2, web3.utils.utf8ToHex(dna))
+    let receipt = await sendContract('drone', 'createDrone', parent1, parent2, web3.utils.utf8ToHex(dna))
     store.updateBlockNumber(receipt.blockNumber)
 
     return receipt
   }
   async function getDiscoveredWorldSize (account) {
-    let receipt = await callContract(account, 'world', 'getDiscoveredWorldSize')
-    return receipt
+    return callContract(account, 'world', 'getDiscoveredWorldSize')
   }
 
   return {
     addWorldState, mineResources, killDrone, createDrone, getDiscoveredWorldSize
   }
 }
-
-
 
 // TODO: export contract functions
 module.exports = { newAccount, ethFunctions }
