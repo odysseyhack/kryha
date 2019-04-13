@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Canvas, useRender } from 'react-three-fiber';
 // A React animation lib, see: https://github.com/react-spring/react-spring
 import { useSpring, animated } from 'react-spring/three';
+import max from 'lodash/max';
 import './index.css';
 
 // function Octahedron() {
@@ -58,13 +59,21 @@ function createData(data, size) {
 async function fetchWorldState() {
   try {
     const data = await fetch('http://localhost:9001/world/');
-    console.log(JSON.stringify(await data.json()));
+    const json = await data.json();
+    return json;
   } catch {
     console.log('error');
     return null;
   }
   return null;
 }
+
+const COLORS = {
+  air: new THREE.Color('white'),
+  water: new THREE.Color('blue'),
+  resources: new THREE.Color('brown'),
+  nature: new THREE.Color('green'),
+};
 
 /**
  * Update every block in the given data texture.
@@ -73,12 +82,15 @@ async function fetchWorldState() {
  * @param {*} worldState a width x height x 3 array for the RGB color for each x,y position
  */
 function updateDataTexture(textRef, size, worldState) {
+  if (!worldState) return;
   for ( var i = 0; i < size; i ++ ) {
+    const obj = worldState[i];
+    const bestType = Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b);
+    const color = COLORS[bestType];
     var stride = i * 3;
-
-    var r = Math.floor( Math.random() * 255 );
-    var g = Math.floor( Math.random() * 255 );
-    var b = Math.floor( Math.random() * 255 );
+    var r = Math.floor( color.r * 255 );
+    var g = Math.floor( color.g * 255 );
+    var b = Math.floor( color.b * 255 );
 
     textRef.current.map.image.data.set([r,g,b], stride);
   }
@@ -88,7 +100,6 @@ function updateDataTexture(textRef, size, worldState) {
 const IMG_LOC = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/4273/';
 const MAP_IMG_LOC = IMG_LOC + 'mars-map.jpg';
 const BUMP_IMG_LOC = IMG_LOC + 'mars-bump.jpg';
-const COLORS = [new THREE.Color('white'), new THREE.Color('blue'), new THREE.Color('brown'), new THREE.Color('red')];
 
 function getRasterData() {
   const color = new THREE.Color();
@@ -101,8 +112,8 @@ function getRasterData() {
 
 function Mars() {
   // Create RASTER texture
-  const width = 100;
-  const height = 100;
+  const width = 1000;
+  const height = 1000;
   const size = width * height;
   const data = new Uint8Array(3 * size);
   // used the buffer to create a DataTexture
@@ -146,7 +157,7 @@ function Mars() {
     // Continuously update the RASTER texture
     const date = new Date();
     if (date.getSeconds() !== prevSeconds) {
-      updateDataTexture(raster, size, []);
+      fetchWorldState().then(data => updateDataTexture(raster, size, data));
       prevSeconds = date.getSeconds();
     }
   });
@@ -200,7 +211,7 @@ function Universe() {
   return (
     <Canvas className="Universe">
       <ambientLight color="white" />
-      <pointLight color="white" intensity={0.05} position={[10, 10, 10]} />
+      <pointLight color="white" intensity={0.06} position={[10, 10, 10]} />
       <Mars />
       <Stars />
     </Canvas>
