@@ -131,7 +131,7 @@ module.exports = function (store) {
       let deployments = []
       for (const pair of survivingPairs) {
         let newDNA = this._mutation(this._binaryCrossover(pair.parent1.DNA, pair.parent2.DNA))
-        deployments.push(deployChild(newDNA))
+        deployments.push(deployChild(newDNA, pair.parent1.id, pair.parent2.id))
       }
 
       return Promise.all(deployments)
