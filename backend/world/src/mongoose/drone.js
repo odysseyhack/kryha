@@ -7,7 +7,7 @@ const droneSchema = new Schema({
   parent2: String,
   dna: Array,
   fitness: Number,
-  active: {
+  alive: {
     type: Boolean,
     default: true
   }
