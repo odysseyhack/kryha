@@ -5,6 +5,8 @@ const fetch = require('node-fetch')
 const register = require('./k8s/register')
 const eth = require('./helper/eth')
 const GeneticsFunction = require('./genetics')
+const FindNode = require('./gathering/findNode/findNode')
+const FindNodeCheck = require('./gathering/findNode/findCheck')
 
 const constants = require('./constants')
 
@@ -16,6 +18,8 @@ class Store {
     this.fitness = 0
     this.DNA = constants.DNA
     this.eth = undefined
+    this.x = 0
+    this.y = 0
   }
 
   async setEth () {
@@ -75,7 +79,28 @@ async function main () {
     }
   })
 
-  console.log('Coming here')
+  while (1) {
+    let discoveredWorld = store.eth.getDiscoverdWorldSize(store.account)
+    let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
+    let rand = Math.random()
+    if (rand > undiscoverd) {
+      let cor = FindNodeCheck(store.x, store.y)
+      store.x = cor.x
+      store.y = cor.y
+      // TODO add resources with eth function
+    } else {
+      // TODO find node to Mine
+      let node = FindNode(store.x, store.y, store.DNA)
+      if (node === null) {
+        let cor = FindNodeCheck(store.x, store.y)
+        store.x = cor.x
+        store.y = cor.y
+      } else {
+        // Node already has the x and y of the node it will mine
+        // TODO make function to call every function with the node
+      }
+    }
+  }
 }
 
 main()
