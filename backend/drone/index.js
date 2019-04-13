@@ -1,5 +1,15 @@
 const express = require('express')
+const bodyParser = require('body-parser')
 const app = express()
+
+app.use(bodyParser.json({
+  limit: '100mb'
+}))
+app.use(bodyParser.urlencoded({
+  extended: true,
+  limit: '100mb'
+}))
+
 const fetch = require('node-fetch')
 
 const register = require('./k8s/register')
@@ -13,7 +23,7 @@ class Store {
     this.id = id
     this.account = account
     this.blockNumber = null
-    this.fitness = 0
+    this.fitness = Math.floor(Math.random() * 10000) // TODO: replace with real fitness
     this.DNA = constants.DNA
     this.eth = undefined
   }
@@ -32,6 +42,15 @@ class Store {
 
     // TODO: call callback when a certain number has been reached
   }
+}
+
+async function geneticsProcess (Genetics) {
+  await Genetics.setAgents()
+  await Genetics.announceFitness()
+  // await Genetics.checkIfDead()
+  // await Genetics.announceChildrenTokens()
+  // await Genetics.announcePairs()
+  // await Genetics.procreate()
 }
 
 async function getContract (name) {
@@ -58,15 +77,6 @@ async function main () {
     res.send('Hello, World!')
   })
 
-  fetch(`${constants.WORLD_URL}/drone/alive`, {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  }).then(res => res.json())
-    .catch(e => ({ success: false, error: e }))
-    .then(data => console.log('ALIVE: ', data))
-
   app.listen(constants.PORT, (err) => {
     if (err) {
       console.err(err.stack)
@@ -75,7 +85,7 @@ async function main () {
     }
   })
 
-  console.log('Coming here')
+  geneticsProcess(Genetics)
 }
 
 main()
