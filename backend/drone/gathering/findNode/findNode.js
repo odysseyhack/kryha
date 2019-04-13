@@ -15,7 +15,7 @@ function calculateDistanceAreaVector(vec1, vec2){
 }
 
 async function getWorld(){
-    return await fetch(`http://localhost:9001/world`)
+    return await fetch(`${constants.WORLD_URL}`)
         .then(res => res.json())
         .then(res => {
             console.log(res[1])
@@ -57,16 +57,18 @@ function calculateFunctionScore(score, func, point){
 
 async function findClosestNode(ownX, ownY, DNA){
     const worldPoints = await getWorld();
-    const DNAnumbers = getDnaNumbers(DNA);
+    const DNAnumbers = getDnaNumbers(DNA)
     let pointFitness = [];
+    let funcVar = functions.array
     worldPoints.forEach(point => {
         let funcCalc = 0;
         let distance = calculateDistance(ownX / 50, point.x / 50, ownY / 50, point.y / 50)
         let totalResources = point.water + point.air + point.resources + point.nature;
-        for(var i = 0; i < functions.length; i++){
-            funcCalc += calculateFunctionScore(DNAnumbers[i], functions[i], point);
+        for(var i = 0; i < funcVar.length; i++){
+            funcCalc += calculateFunctionScore(DNAnumbers[i], funcVar[i], point);
         }
-        let fitness = (funcCalc / functions.length) - (distance * 0.01);
+        let fitness = (funcCalc / funcVar.length)
+        
         pointFitness.push({fit: fitness, x: point.x, y: point.y})
     });
     var maxFit = 0;
@@ -75,11 +77,9 @@ async function findClosestNode(ownX, ownY, DNA){
     pointFitness.map(function(obj){
         if (obj.fit > maxFit) maxObj = obj;
     })
+    console.log(maxObj)
 
     return maxObj;
 }
-
-console.log(findClosestNode(10, 10, 'asdsdsds'))
-console.log(calculateFunctionScore(1, {air: 0, resources: 0, water: -100, nature: 200}, {air: 0, resources: 0, water: 300, nature: 100}))
 
 module.exports = findClosestNode
