@@ -57,7 +57,6 @@ async function findClosestNode (ownX, ownY, DNA) {
   let funcVar = functions.array
   worldPoints.forEach(point => {
     let funcCalc = 0
-    let distance = calculateDistance(ownX / 50, point.x / 50, ownY / 50, point.y / 50)
     let totalResources = point.water + point.air + point.resources + point.nature
     for (var i = 0; i < funcVar.length; i++) {
       funcCalc += calculateFunctionScore(DNAnumbers[i], funcVar[i], point)
