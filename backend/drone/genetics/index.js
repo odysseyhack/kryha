@@ -63,7 +63,7 @@ module.exports = function (store) {
     // TODO: kill pod
     async checkIfDead () {
       console.log('Checking if dead')
-      let sortedFitness = Object.values(this.agents).sort((a, b) => a.fitness - b.fitness)
+      let sortedFitness = Object.values(this.agents).sort((a, b) => b.fitness - a.fitness)
       let lastSurvivor = sortedFitness[constants.POPSIZE - constants.CHILDREN - 1]
 
       if (lastSurvivor && lastSurvivor.fitness > store.fitness) {
