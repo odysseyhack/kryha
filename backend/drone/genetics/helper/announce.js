@@ -1,27 +1,34 @@
-const fetch = require('node-fetch')
+const fetch = require('fetch-timeout')
 
-async function announce (endpoint, actorIds, data) {
+async function announce (endpoint, actors, data) {
+  let actorIds = Object.keys(actors)
+
   let fetches = []
+
   for (let actor of actorIds) {
     // remove the 0
-    let slicedActor = actor.slice(1)
-    let uri = `http://${slicedActor}/${endpoint}`
+    let slicedActor = actor.slice(1).toLowerCase()
+    let uri = `http://${slicedActor}:3000/genetic/${endpoint}`
 
-    console.log(`Calling ${uri}`)
+    console.log(`Calling ${uri} with ${data}`)
     fetches.push(fetch(uri, {
       method: 'post',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(data)
-    }).catch(e => ({ success: false, response: false, id: actor, error: e }))
-      .then(res => res.json())
-      .catch(e => ({ success: false, response: true, id: actor, error: e }))
+    }, 5000, 'Timeout')
+      .then(res => {
+        if (res.status !== 200) throw new Error('Not OK')
+        return res.json()
+      })
+      .catch(e => ({ success: false, response: false, id: actor, error: e }))
       .then(data => ({ success: data.success, response: true, id: actor, data }))
     )
   }
 
   let results = await Promise.all(fetches)
+
   let deadNodes = results.filter(v => !v.response)
   let aliveNodes = results.filter(v => v.response)
 

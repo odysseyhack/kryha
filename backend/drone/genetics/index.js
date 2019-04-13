@@ -3,6 +3,8 @@ const sample = require('lodash.sample')
 const constants = require('../constants')
 const normalRandom = require('./helper/normalRandom')
 const deployChild = require('../k8s/deploy')
+const fetch = require('node-fetch')
+const announce = require('./helper/announce')
 
 const uuidv4 = require('uuid/v4')
 
@@ -18,21 +20,44 @@ module.exports = function (store) {
       this.pairs = []
     }
 
-    // TODO: put on blockchain
-    // PUBSUB ?
-    announceFitness () {
-      this._calculateFitness()
-      return { id: store.id, fitness: store.fitness }
+    async setAgents () {
+      let result = await fetch(`${constants.WORLD_URL}/drone/list/alive`)
+        .then(res => res.json())
+        .catch(e => {
+          console.warn('Setting failed', e)
+          return []
+        })
+
+      for (const a of result) {
+        this.agents[a.address] = {
+          dna: a.dna[0], // TODO: change it being an array in future
+          id: a.address
+        }
+      }
+    }
+
+    _removeAgent (id) {
+      delete this.agents[id]
+    }
+
+    _removeAgents (idArray) {
+      for (const id of idArray) {
+        this._removeAgent(id)
+      }
+    }
+
+    async announceFitness () {
+      let [, dead] = await announce('fitness', this.agents, { id: store.id, fitness: store.fitness })
+      this._removeAgents(dead)
     }
 
     // TODO: register from blockchain
     // PUBSUB ?
-    registerFitness (id, fitness, DNA) {
+    registerFitness (id, fitness) {
       this.agents[id] = {
         ...this.agents[id],
         fitness,
-        id,
-        DNA
+        id
       }
     }
 
@@ -47,16 +72,14 @@ module.exports = function (store) {
       }
 
       // remove dead agents from list
-      let deadDrones = sortedFitness[constants.POPSIZE - constants.CHILDREN]
-      for (const dead of deadDrones) {
-        delete this.agents[dead.id]
-      }
+      let deadDrones = sortedFitness[constants.POPSIZE - constants.CHILDREN].map(d => d.id)
+      this._removeAgents(deadDrones)
 
       return true
     }
 
     // Adaption of tournament selections
-    _determineChildrenTokens () {
+    announceChildrenTokens () {
       this.childrenTokens = 0
       for (let attempt = 0; attempt < constants.PROCREATE_ATTEMPS; attempt++) {
         let survided = true
@@ -72,14 +95,9 @@ module.exports = function (store) {
 
         if (survided) this.childrenTokens++
       }
-    }
 
-    // TODO: put on blockchain
-    // PUBSUB ?
-    announceChildrenTokens () {
-      this._determineChildrenTokens()
-
-      return { id: store.id, childrenTokens: this.childrenTokens }
+      let [, dead] = announce('childrenTokens', this.agents, { id: store.id, childrenTokens: this.childrenTokens })
+      this._removeAgents(dead)
     }
 
     // TODO: register from blockchain / pubsub
@@ -114,12 +132,12 @@ module.exports = function (store) {
         }])
       }
 
-      return pairs
+      let [, dead] = announce('pairs', this.agents, { pairs })
+      this._removeAgents(dead)
     }
 
     registerPairs (pairs) {
       this.pairs = [...this.pairs, pairs]
-      this.sortPairs()
     }
 
     procreate () {
