@@ -1,7 +1,8 @@
 const sample = require('lodash.sample')
 
 const constants = require('../constants')
-const sort = require('./helper/insertSort')
+const normalRandom = require('./helper/normalRandom')
+const deployChild = require('../k8s/deploy')
 
 const uuidv4 = require('uuid/v4')
 
@@ -15,8 +16,6 @@ module.exports = function (store) {
       this.parents = []
 
       this.pairs = []
-
-      this.sortPairs = () => sort(this.pairs, 'id')
     }
 
     // TODO: put on blockchain
@@ -28,11 +27,12 @@ module.exports = function (store) {
 
     // TODO: register from blockchain
     // PUBSUB ?
-    registerFitness (id, fitness) {
+    registerFitness (id, fitness, DNA) {
       this.agents[id] = {
         ...this.agents[id],
         fitness,
-        id
+        id,
+        DNA
       }
     }
 
@@ -42,7 +42,7 @@ module.exports = function (store) {
 
       if (lastSurvivor.fitness > store.fitness) {
         console.log(`I'm dead: ${store.id} ${store.fitness}`)
-        await store.eth.killDrone(store.account)
+        await store.eth.killDrone()
         return false
       }
 
@@ -96,17 +96,10 @@ module.exports = function (store) {
       for (let i = 0; i < this.childrenTokens; i++) {
         let parent2
 
-        while (this.parents.length > 0) {
-          parent2 = sample(this.parents)
+        parent2 = sample(this.parents)
 
-          // remove parent after selecting
-          this.parents.splice(this.parents.indexOf(parent2), 1)
-
-          // TODO: check if parent has available paring
-          // TODO: retrieve DNA
-
-          break
-        }
+        // remove parent after selecting
+        this.parents.splice(this.parents.indexOf(parent2), 1)
 
         pairs.push([{
           id: uuidv4(),
@@ -129,13 +122,64 @@ module.exports = function (store) {
       this.sortPairs()
     }
 
-    // TODO: mix dna
-    // TODO: publish kids
-    // TODO: mutations
     procreate () {
-      for (let child = 0; child < this.childrenTokens; child++) {
+      let sortedPairs = Object.values(this.pairs).sort((a, b) => a.id - b.id)
+      let lastSurvingPair = sortedPairs[constants.CHILDREN - 1]
+      let yourPairs = this.pairs.filter(p => p.parent1.id === store.id)
+      let survivingPairs = yourPairs.filter(p => p.id > lastSurvingPair)
 
+      let deployments = []
+      for (const pair of survivingPairs) {
+        let newDNA = this._mutation(this._binaryCrossover(pair.parent1.DNA, pair.parent2.DNA))
+        deployments.push(deployChild(newDNA, pair.parent1.id, pair.parent2.id))
       }
+
+      return Promise.all(deployments)
+    }
+
+    _binaryCrossover (DNA1, DNA2) {
+      if (DNA1.length !== DNA2.length) throw new Error('DNA strings have unequal size')
+
+      let childDNA = ''
+      for (let i = 0; i < DNA1.length; i++) {
+        let element1 = DNA1[i]
+        let element2 = DNA2[i]
+
+        if (Math.random() > 0.5) {
+          childDNA += element1
+        } else {
+          childDNA += element2
+        }
+      }
+
+      return childDNA
+    }
+
+    _mutation (DNA) {
+      DNA = DNA.split('')
+
+      for (let i = 0; i < DNA.length; i++) {
+        let chance = Math.random()
+
+        if (chance > constants.MUTATION_RATE) {
+          continue
+        }
+
+        let value = DNA[i].charCodeAt(0) / 10
+
+        let minus = Math.random() > constants.MINUS_CHANCE
+        let r = normalRandom()
+
+        if (minus) value -= r
+        else value += r
+
+        if (value < 0) value = 0
+        if (value > 10) value = 10
+
+        DNA[i] = String.fromCharCode(Math.floor(value) * 10)
+      }
+
+      return DNA.join('')
     }
   }()
 }

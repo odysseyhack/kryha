@@ -10,7 +10,9 @@ const droneSchema = new Schema({
   alive: {
     type: Boolean,
     default: true
-  }
+  },
+  x: Number,
+  y: Number
 })
 
 const Point = mongoose.model('Drone', droneSchema, 'drones')

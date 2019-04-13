@@ -16,10 +16,6 @@
             ],
             "env": [
               {
-                "name": "GANACHE",
-                "value": "ws://ganache:8545"
-              },
-              {
                 "name": "CLUSTER",
                 "value": "TRUE"
               }

@@ -14,8 +14,8 @@ contract World {
     int public WorldNature;
     int public WorldWater;
 
-    event E_FoundResources(uint x, uint y, int air, int resources, int nature, int water);
-    event E_MineResources(uint x, uint y, int air, int resources, int nature, int water);
+    event E_FoundResources(address indexed drone, uint indexed x, uint indexed y, int air, int resources, int nature, int water);
+    event E_MineResources(address indexed drone, uint indexed x, uint indexed y, int air, int resources, int nature, int water);
 
     struct WorldState{
         int air;
@@ -53,7 +53,7 @@ contract World {
         WorldNature += _nature;
         WorldWater += _water;
         DiscoveredNodes += 1;
-        emit E_FoundResources(_x, _y, _air, _resources, _nature, _water);
+        emit E_FoundResources(msg.sender, _x, _y, _air, _resources, _nature, _water);
     }
 
     function mineResources( uint _x, uint _y, int _air, int _resources, int _nature, int _water) external {
@@ -76,7 +76,7 @@ contract World {
         WorldResources += newResources;
         WorldNature += newNature;
         WorldWater += newWater;
-        emit E_MineResources(_x, _y, _air, _resources, _nature, _water);
+        emit E_MineResources(msg.sender, _x, _y, _air, _resources, _nature, _water);
     }
 
     function getDiscoveredWorldSize() external view returns (uint, uint) {

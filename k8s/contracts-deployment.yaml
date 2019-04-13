@@ -25,7 +25,7 @@ spec:
         - start
         env:
         - name: ETHEREUM_HOST
-          value: ethereum-node
+          value: ganache
         - name: ETHEREUM_PROTOCOL
           value: http
         - name: MONGO_URL

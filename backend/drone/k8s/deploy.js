@@ -10,7 +10,7 @@ const deploymentManifest = require('./pod.json')
 
 let global = 'q'.concat(uuidv4().replace(/-/g, ''))
 
-async function deploy () {
+async function deploy (DNA, parent1, parent2) {
   try {
     let client
     if (process.env.CLUSTER === 'TRUE') { // within cluster
@@ -35,6 +35,20 @@ async function deploy () {
     deploymentManifest.spec.template.metadata.labels.app = global
     deploymentManifest.spec.selector.app = global
     deploymentManifest.spec.selector.matchLabels.app = global
+
+    let env = deploymentManifest.spec.template.spec.containers[0].env
+    env = env.filter(e => ['DNA', 'PARENT1', 'PARENT2'].indexOf(e.name) < 0)
+
+    deploymentManifest.spec.template.spec.containers[0].env = [...env, {
+      name: 'DNA',
+      value: DNA
+    }, {
+      name: 'PARENT1',
+      value: parent1
+    }, {
+      name: 'PARENT2',
+      value: parent2
+    }]
 
     console.log(deploymentManifest.spec.template)
     // Create a new Deployment.

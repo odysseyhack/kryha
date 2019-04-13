@@ -28,10 +28,9 @@ router.put('/point', injectPoint, async (req, res, next) => {
   }
 })
 
-// todo: list of points
 router.get('/', async (req, res, next) => {
   try {
-    const points = await Point.find().exec()
+    const points = await Point.find({}, { air: 1, resources: 1, nature: 1, water: 1, _id: 0 }).sort({ y: 1, x: 1 }).exec()
     return res.status(200).json(points)
   } catch (error) {
     next(error)
