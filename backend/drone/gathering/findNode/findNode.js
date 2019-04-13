@@ -19,6 +19,7 @@ function getDnaNumbers(DNA){
     for(var i = 0; i < DNA.length; i++){
         DNAnumbers.push(DNA.charCodeAt(i) / 10);
     }
+    return DNAnumbers;
 
 }
 
@@ -27,10 +28,19 @@ function calculateFunctionScore(score, func, point){
     let calc = 0;
     let count = 0;
     if (func.air < 0){
-        calc -= func.air * score / point.air
+        if (point.air == 0 ){
+            calc -= 1;
+        } else {
+            calc += func.air * score / point.air
+        }
         count += 1;
     } else if (func.air > 0) {
-        calc += func.air * score / point.air
+        if (point.air == 0) {
+            calc += 1;
+        } else {
+            calc += func.air * score / point.air
+        }
+        
         count += 1;
     }
     if (func.resources < 0){
