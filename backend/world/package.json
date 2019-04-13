@@ -2,6 +2,7 @@
   "name": "world",
   "version": "0.0.1",
   "scripts": {
+    "start": "babel ./src --out-dir ./build && NODE_ENV=production node ./build",
     "dev": "nodemon ./src --exec babel-node",
     "test": "jest ./src"
   },

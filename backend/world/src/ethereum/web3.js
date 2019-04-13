@@ -14,44 +14,54 @@ export const registerListener = (contract, MyEvent, options, callback) => {
 }
 
 export async function setup () {
-  const { data: worldJsonInterface } = await axios.get(`${constants.CONTRACTS_URL}/world`)
-  const { data: droneJsonInterface } = await axios.get(`${constants.CONTRACTS_URL}/drone`)
-  const worldContract = new web3.eth.Contract(worldJsonInterface.abi, worldJsonInterface.address)
-  const droneContract = new web3.eth.Contract(droneJsonInterface.abi, droneJsonInterface.address)
+  try {
+    const { data: worldJsonInterface } = await axios.get(`${constants.CONTRACTS_URL}/world`)
+    const { data: droneJsonInterface } = await axios.get(`${constants.CONTRACTS_URL}/drone`)
+    const worldContract = new web3.eth.Contract(worldJsonInterface.abi, worldJsonInterface.address)
+    const droneContract = new web3.eth.Contract(droneJsonInterface.abi, droneJsonInterface.address)
 
-  // got mine resources event, update point in mongo
-  registerListener(worldContract, 'E_MineResources', {}, async (event) => {
-    const { drone: address, x, y, air, resources, nature, water } = event.returnValues
-    // find point
-    const point = await Point.findOne({ x, y }).exec()
-    // update point
-    point.set('air', Number(point.air) + Number(air))
-    point.set('resources', Number(point.resources) + Number(resources))
-    point.set('nature', Number(point.nature) + Number(nature))
-    point.set('water', Number(point.water) + Number(water))
-    await point.save()
-    console.info(`updated point ${x},${y}`)
-    // todo: update drone involved
-    const drone = await Drone.findOne({ address }).exec()
-    drone.set('x', x)
-    drone.set('y', y)
-    await drone.save()
-    console.info(`updated drone ${address}`)
-  })
+    // got mine resources event, update point in mongo
+    registerListener(worldContract, 'E_MineResources', {}, async (event) => {
+      const { drone: address, x, y, air, resources, nature, water } = event.returnValues
+      // find point
+      const point = await Point.findOne({ x, y }).exec()
+      // update point
+      point.set('air', Number(point.air) + Number(air))
+      point.set('resources', Number(point.resources) + Number(resources))
+      point.set('nature', Number(point.nature) + Number(nature))
+      point.set('water', Number(point.water) + Number(water))
+      await point.save()
+      console.info(`updated point ${x},${y}`)
+      // todo: update drone involved
+      const drone = await Drone.findOne({ address }).exec()
+      drone.set('x', x)
+      drone.set('y', y)
+      await drone.save()
+      console.info(`updated drone ${address}`)
+    })
 
-  registerListener(droneContract, 'NewDrone', {}, async (event) => {
-    const { drone: address, parent1, parent2, dna } = event.returnValues
-    await new Drone({ address, parent1, parent2, dna, fitness: 0 }).save()
-    console.info(`drone ${address} added`)
-  })
+    registerListener(droneContract, 'NewDrone', {}, async (event) => {
+      console.log('new drone')
+      const { drone: address, parent1, parent2, dna } = event.returnValues
+      await new Drone({ address, parent1, parent2, dna, fitness: 0 }).save()
+      console.info(`drone ${address} added`)
+    })
 
-  registerListener(droneContract, 'DroneDies', {}, async (event) => {
-    const { drone: address } = event.returnValues
-    const drone = await Drone.findOne({ address }).exec()
-    drone.set('alive', false)
-    await drone.save()
-    console.info(`drone ${address} died`)
-  })
+    registerListener(droneContract, 'DroneDies', {}, async (event) => {
+      const { drone: address } = event.returnValues
+      const drone = await Drone.findOne({ address }).exec()
+      drone.set('alive', false)
+      await drone.save()
+      console.info(`drone ${address} died`)
+    })
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      console.info('contracts not available yet, restarting')
+    } else {
+      console.error(error)
+    }
+    process.exit(1)
+  }
 }
 
 export default web3
