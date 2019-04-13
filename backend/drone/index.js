@@ -30,7 +30,7 @@ class Store {
     this.account = account
     this.blockNumber = null
     this.fitness = 0
-    this.DNA = this.generateDNA()
+    this.DNA = constants.DNA
     this.eth = undefined
     this.x = 0
     this.y = 0
@@ -44,14 +44,6 @@ class Store {
     let World = await getContract('world')
 
     this.eth = eth.ethFunctions(this, Drone, World)
-  }
-
-  generateDNA () {
-    let s = ''
-    for (let i = 0; i < constants.DNA_SIZE; i++) {
-      s.concat(String.fromCharCode(Math.round(Math.random() * 10)))
-    }
-    return s
   }
 
   updateBlockNumber (blockNumber) {
@@ -133,28 +125,28 @@ async function main () {
       await Genetics.procreate()
     }
 
-    // let discoveredWorld = store.eth.getDiscoverdWorldSize(store.account)
-    // let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
-    // let rand = Math.random()
-    // if (rand > undiscoverd) {
-    //   let cor = FindNodeCheck(store.x, store.y)
-    //   store.x = cor.x
-    //   store.y = cor.y
-    //   locate(store)
-    // } else {
-    //   let node = FindNode(store.x, store.y, store.DNA)
-    //   if (node === null && undiscoverd !== 0) {
-    //     let cor = FindNodeCheck(store.x, store.y)
-    //     store.x = cor.x
-    //     store.y = cor.y
-    //     locate(store)
-    //   } else {
-    //     store.fitness += node.fitness
-    //     store.x = node.x
-    //     store.y = node.y
-    //     mine(store)
-    //   }
-    // }
+    let discoveredWorld = store.eth.getDiscoverdWorldSize(store.account)
+    let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
+    let rand = Math.random()
+    if (rand > undiscoverd) {
+      let cor = FindNodeCheck(store.x, store.y)
+      store.x = cor.x
+      store.y = cor.y
+      locate(store)
+    } else {
+      let node = FindNode(store.x, store.y, store.DNA)
+      if (node === null && undiscoverd !== 0) {
+        let cor = FindNodeCheck(store.x, store.y)
+        store.x = cor.x
+        store.y = cor.y
+        locate(store)
+      } else {
+        store.fitness += node.fitness
+        store.x = node.x
+        store.y = node.y
+        mine(store)
+      }
+    }
 
     counter++
   }

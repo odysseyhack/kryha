@@ -7,7 +7,7 @@ module.exports = {
   MUTATION_RATE: parseFloat(process.env.MUTATION_RATE) || 0.01,
   MINUS_CHANCE: parseFloat(process.env.MINUS_CHANCE) || 0.5,
   PORT: Number(process.env.PORT) || 3000,
-  DNA: process.env.DNA || 'DEFAULTDNA',
+  DNA: process.env.DNA || '\u0001\n\n\u0001\n\u0006\u0000',
   PARENT1: process.env.PARENT1 || '0x0000000000000000000000000000000000000000',
   PARENT2: process.env.PARENT2 || '0x0000000000000000000000000000000000000000',
   WORLD_URL: process.env.WORLD_URL || 'http://world:9001',
