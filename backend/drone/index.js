@@ -2,6 +2,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
 
+const sleep = require('sleep')
+
 app.use(bodyParser.json({
   limit: '100mb'
 }))
@@ -10,7 +12,7 @@ app.use(bodyParser.urlencoded({
   limit: '100mb'
 }))
 
-const fetch = require('node-fetch')
+const fetch = require('fetch-timeout')
 
 const register = require('./k8s/register')
 const eth = require('./helper/eth')
@@ -49,12 +51,20 @@ class Store {
 }
 
 async function geneticsProcess (Genetics) {
+  let n = 2
+
   await Genetics.setAgents()
   await Genetics.announceFitness()
-  // await Genetics.checkIfDead()
-  // await Genetics.announceChildrenTokens()
-  // await Genetics.announcePairs()
-  // await Genetics.procreate()
+  await sleep.sleep(n)
+
+  await Genetics.checkIfDead()
+  await Genetics.announceChildrenTokens()
+  await sleep.sleep(n)
+
+  await Genetics.announcePairs()
+  await sleep.sleep(n)
+
+  await Genetics.procreate()
 }
 
 async function getContract (name) {
@@ -70,7 +80,7 @@ async function main () {
   await store.setEth()
 
   // Register on k8s and blockchain
-  register(account.address)
+  await register(account.address)
   await store.eth.createDrone(constants.PARENT1, constants.PARENT2, store.DNA)
 
   const Genetics = GeneticsFunction(store)
