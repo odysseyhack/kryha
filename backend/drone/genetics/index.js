@@ -162,7 +162,7 @@ module.exports = function (store) {
       let sortedPairs = Object.values(this.pairs).sort((a, b) => b.id - a.id)
       let lastSurvingPair = sortedPairs[constants.CHILDREN - 1]
       let yourPairs = this.pairs.filter(p => p.parent1.id === store.id)
-      let survivingPairs = yourPairs.filter(p => !lastSurvingPair || p.id > lastSurvingPair)
+      let survivingPairs = yourPairs.filter(p => !lastSurvingPair || p.id > lastSurvingPair.id)
 
       console.log(survivingPairs)
 
