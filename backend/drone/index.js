@@ -30,7 +30,7 @@ class Store {
     this.account = account
     this.blockNumber = null
     this.fitness = 0
-    this.DNA = this.generetaDNA()
+    this.DNA = this.generateDNA()
     this.eth = undefined
     this.x = 0
     this.y = 0
@@ -44,7 +44,7 @@ class Store {
     this.eth = eth.ethFunctions(this, Drone, World)
   }
 
-  generetaDNA () {
+  generateDNA () {
     let s = ''
     for (let i = 0; i < constants.DNA_SIZE; i++) {
       s.concat(String.fromCharCode(Math.round(Math.random() * 10)))
