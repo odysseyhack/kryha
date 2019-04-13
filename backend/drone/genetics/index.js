@@ -15,19 +15,18 @@ class Genetics {
     this.DNA = DNA
     this.id = id
 
-    this.agents = []
+    this.agents = {}
     this.childrenTokens = 0
     this.parents = []
 
     this.pairs = []
 
-    this.sortFitness = () => sort(this.agents, 'fitness')
     this.sortPairs = () => sort(this.pairs, 'id')
   }
 
   // TODO: make a real fitness calc
-  _calculateFitness () {
-    this.fitness = Math.round(Math.random() * 10000)
+  setFitness (fitness) {
+    this.fitness = fitness
   }
 
   // TODO: put on blockchain
@@ -40,21 +39,29 @@ class Genetics {
   // TODO: register from blockchain
   // PUBSUB ?
   registerFitness (id, fitness) {
-    this.agents.push({ id, fitness })
-    this.sortFitness()
+    this.agents[id] = {
+      ...this.agents[id],
+      fitness,
+      id
+    }
   }
 
-  checkIfDead () {
-    let lastSurvivor = this.agents[constants.POPSIZE - constants.CHILDREN - 1]
+  async checkIfDead () {
+    let sortedFitness = Object.values(this.agents).sort((a, b) => a.fitness - b.fitness)
+    let lastSurvivor = sortedFitness[constants.POPSIZE - constants.CHILDREN - 1]
 
     if (lastSurvivor.fitness > this.fitness) {
       console.log(`I'm dead: ${this.id} ${this.fitness}`)
-      eth.killDrone(this.account)
+      await eth.killDrone(this.account)
       return false
     }
 
     // remove dead agents from list
-    this.agents = this.agents.slice(0, constants.POPSIZE - constants.CHILDREN)
+    let deadDrones = sortedFitness[constants.POPSIZE - constants.CHILDREN]
+    for (const dead of deadDrones) {
+      delete this.agents[dead.id]
+    }
+
     return true
   }
 
