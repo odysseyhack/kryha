@@ -17,6 +17,8 @@ body,
   user-select: none;
   overflow: hidden;
   background: #272727;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
