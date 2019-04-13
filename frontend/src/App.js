@@ -4,13 +4,13 @@ import Logo from './components/logo';
 import Controls from './components/controls';
 
 function App() {
-  const [showRegions, setShowRegions] = useState(false);
+  const [showRegions, setShowRegions, showDrones, setShowDrones] = useState(false);
   let universe = useRef();
   return (
     <React.Fragment>
       <Logo />
-      <Controls showRegions={showRegions} setShowRegions={setShowRegions} />
-      <Universe ref={universe} showRegions={showRegions} />
+      <Controls showRegions={showRegions} setShowRegions={setShowRegions} showDrones={showDrones} setShowDrones={setShowDrones} />
+      <Universe ref={universe} showRegions={showRegions} showDrones={showDrones} />
     </React.Fragment>
   );
 }
