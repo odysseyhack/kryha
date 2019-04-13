@@ -17,6 +17,8 @@ const eth = require('./helper/eth')
 const GeneticsFunction = require('./genetics')
 const FindNode = require('./gathering/findNode/findNode')
 const FindNodeCheck = require('./gathering/findNode/findCheck')
+const mine = require('./gathering/mineAndLocate/mine')
+const locate = require('./gathering/mineAndLocate/locate')
 
 const constants = require('./constants')
 
@@ -91,28 +93,31 @@ async function main () {
 
   geneticsProcess(Genetics)
 
-  // while (1) {
-  //   let discoveredWorld = store.eth.getDiscoverdWorldSize(store.account)
-  //   let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
-  //   let rand = Math.random()
-  //   if (rand > undiscoverd) {
-  //     let cor = FindNodeCheck(store.x, store.y)
-  //     store.x = cor.x
-  //     store.y = cor.y
-  //     // TODO add resources with eth function
-  //   } else {
-  //     // TODO find node to Mine
-  //     let node = FindNode(store.x, store.y, store.DNA)
-  //     if (node === null) {
-  //       let cor = FindNodeCheck(store.x, store.y)
-  //       store.x = cor.x
-  //       store.y = cor.y
-  //     } else {
-  //       // Node already has the x and y of the node it will mine
-  //       // TODO make function to call every function with the node
-  //     }
-  //   }
-  // }
+  while (1) {
+    let discoveredWorld = store.eth.getDiscoverdWorldSize(store.account)
+    let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
+    let rand = Math.random()
+    if (rand > undiscoverd) {
+      let cor = FindNodeCheck(store.x, store.y)
+      store.x = cor.x
+      store.y = cor.y
+      locate(store)
+    } else {
+      // TODO find node to Mine
+      let node = FindNode(store.x, store.y, store.DNA)
+      if (node === null && undiscoverd !== 0) {
+        let cor = FindNodeCheck(store.x, store.y)
+        store.x = cor.x
+        store.y = cor.y
+        locate(store)
+      } else {
+        store.fitness += node.fitness
+        store.x = node.x
+        store.y = node.y
+        mine(store)
+      }
+    }
+  }
 }
 
 main()
