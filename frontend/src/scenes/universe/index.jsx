@@ -110,10 +110,10 @@ function getRasterData() {
   return data;
 }
 
-function Mars() {
+function Mars({ showRegions }) {
   // Create RASTER texture
-  const width = 1000;
-  const height = 1000;
+  const width = 100;
+  const height = 100;
   const size = width * height;
   const data = new Uint8Array(3 * size);
   // used the buffer to create a DataTexture
@@ -174,7 +174,7 @@ function Mars() {
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
         <meshPhongMaterial attach="material" map={mapTexture} bumpMap={bumpTexture} bumpScale={8} />
       </animated.mesh>
-      <animated.mesh position={[0,0,0]}>
+      <animated.mesh visible={showRegions} position={[0,0,0]}>
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
         <animated.meshPhongMaterial attach="material" ref={raster} map={rasterTexture} opacity={0.2} transparent />
       </animated.mesh>
@@ -207,12 +207,12 @@ function Stars() {
   )
 }
 
-function Universe() {
+function Universe({ showRegions }) {
   return (
     <Canvas className="Universe">
       <ambientLight color="white" />
       <pointLight color="white" intensity={0.06} position={[10, 10, 10]} />
-      <Mars />
+      <Mars showRegions={showRegions} />
       <Stars />
     </Canvas>
   );
