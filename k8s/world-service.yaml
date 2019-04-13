@@ -9,6 +9,8 @@ metadata:
     io.kompose.service: world
   name: world
 spec:
+  loadBalancerIP: 13.80.136.159
+  type: LoadBalancer
   ports:
   - name: "9001"
     port: 9001

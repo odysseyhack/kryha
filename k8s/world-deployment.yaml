@@ -22,14 +22,14 @@ spec:
       - args:
         - npm
         - run
-        - dev
+        - start
         env:
         - name: CONTRACTS_URL
           value: http://contracts:9002
         - name: ETHEREUM_URL
           value: ws://ganache:8545
         - name: MONGO_URL
-          value: mongodb://mongo:27017/world
+          value: mongodb://mongo-mongodb.default.svc.cluster.local:27017/world
         image: kryha/world
         name: world
         ports:
