@@ -8,9 +8,8 @@ const config = require('kubernetes-client').config
 const uuidv4 = require('uuid/v4')
 const deploymentManifest = require('./pod.json')
 
-let global = 'q'.concat(uuidv4().replace(/-/g, ''))
-
 async function deploy (DNA, parent1, parent2) {
+  let name = 'q'.concat(uuidv4().replace(/-/g, ''))
   try {
     let client
     if (process.env.CLUSTER === 'TRUE') { // within cluster
@@ -30,11 +29,11 @@ async function deploy (DNA, parent1, parent2) {
     console.log('Namespaces: ', namespaces)
     // console.log(client.apis.apps.v1.namespaces('default'))
 
-    deploymentManifest.metadata.name = global
-    deploymentManifest.metadata.labels.app = global
-    deploymentManifest.spec.template.metadata.labels.app = global
-    deploymentManifest.spec.selector.app = global
-    deploymentManifest.spec.selector.matchLabels.app = global
+    deploymentManifest.metadata.name = name
+    deploymentManifest.metadata.labels.app = name
+    deploymentManifest.spec.template.metadata.labels.app = name
+    deploymentManifest.spec.selector.app = name
+    deploymentManifest.spec.selector.matchLabels.app = name
 
     let env = deploymentManifest.spec.template.spec.containers[0].env
     env = env.filter(e => ['DNA', 'PARENT1', 'PARENT2'].indexOf(e.name) < 0)

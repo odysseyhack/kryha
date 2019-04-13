@@ -60,7 +60,22 @@ function createData(data, size) {
  */
 async function fetchWorldState() {
   try {
-    const data = await fetch('http://13.80.136.159:9001/world/');
+    const data = await fetch('http://13.80.136.159:9001/world');
+    const json = await data.json();
+    return json;
+  } catch {
+    console.log('error');
+    return null;
+  }
+  return null;
+}
+
+/**
+ * Fetch drones state data.
+ */
+async function fetchDronesState() {
+  try {
+    const data = await fetch('http://13.80.136.159:9001/drone/list/alive');
     const json = await data.json();
     return json;
   } catch {
@@ -114,7 +129,8 @@ function getRasterData() {
   return data;
 }
 
-function Mars({ showRegions }) {
+function Mars({ showRegions, showDrones }) {
+  const [droneData, setDroneData] = useState([])
   // Create RASTER texture
   const width = 100;
   const height = 100;
@@ -127,6 +143,7 @@ function Mars({ showRegions }) {
 
   let group = useRef();
   let raster = useRef();
+  let drones = useRef();
   let theta = 0;
 
   // useEffect(() => {
@@ -181,6 +198,7 @@ function Mars({ showRegions }) {
     const date = new Date();
     if (date.getSeconds() !== prevSeconds) {
       fetchWorldState().then(data => updateDataTexture(raster, size, data));
+      fetchDronesState().then(data => setDroneData(data));
       prevSeconds = date.getSeconds();
     }
   });
@@ -201,6 +219,11 @@ function Mars({ showRegions }) {
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
         <animated.meshPhongMaterial attach="material" ref={raster} map={rasterTexture} opacity={0.2} transparent />
       </animated.mesh>
+      <Drones data={droneData}/>
+      {/* <animated.mesh visible={showDrones} position={[0,0,0]}>
+        <sphereGeometry attach="geometry" args={[2, 32, 32]} />
+        <animated.meshPhongMaterial attach="material" ref={drones} map={dronesTexture} opacity={0.2} transparent />
+      </animated.mesh> */}
     </group>
   );
 }
@@ -244,6 +267,32 @@ function Universe({ showRegions }) {
       <Stars />
     </Canvas>
   );
+}
+
+function Drones({ data }) {
+  // create circle shape
+  const circleRadius = 0.05;
+  const circleShape = new THREE.Shape();
+  circleShape.moveTo( 0, circleRadius );
+  circleShape.quadraticCurveTo( circleRadius, circleRadius, circleRadius, 0 );
+  circleShape.quadraticCurveTo( circleRadius, - circleRadius, 0, - circleRadius );
+  circleShape.quadraticCurveTo( - circleRadius, - circleRadius, - circleRadius, 0 );
+  circleShape.quadraticCurveTo( - circleRadius, circleRadius, 0, circleRadius );
+
+  return (
+    <group>
+      {
+        data &&
+        data.map((drone, index) => {
+          if (drone.x && drone.y) {
+            return <mesh key={index} geometry={new THREE.ShapeBufferGeometry( circleShape )} material={new THREE.MeshPhongMaterial( { color: 0x00f000, side: THREE.DoubleSide } )} position={[drone.x,drone.y,2]} scale={[1,1,1]} />
+          } else {
+            return null
+          }
+        })
+      }
+    </group>
+  )
 }
 
 export default Universe;

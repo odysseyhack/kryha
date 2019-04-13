@@ -115,11 +115,16 @@ function ethFunctions (store, Drone, World) {
     return receipt
   }
   async function getDiscoveredWorldSize () {
-    return callContract('world', 'getDiscoveredWorldSize')
+    let result = await callContract('world', 'getDiscoveredWorldSize')
+
+    return {
+      DiscoveredNodes: Number(result[0]),
+      WorldSize: Number(result[1])
+    }
   }
 
   async function WorldStateChecked (x, y) {
-    return callContract('world', 'WorldStateChecked')
+    return Boolean(await callContract('world', 'WorldStateChecked', x, y))
   }
 
   return {

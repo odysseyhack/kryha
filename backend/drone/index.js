@@ -2,6 +2,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
 
+const sleep = require('sleep')
+
 app.use(bodyParser.json({
   limit: '100mb'
 }))
@@ -10,7 +12,7 @@ app.use(bodyParser.urlencoded({
   limit: '100mb'
 }))
 
-const fetch = require('node-fetch')
+const fetch = require('fetch-timeout')
 
 const register = require('./k8s/register')
 const eth = require('./helper/eth')
@@ -27,11 +29,14 @@ class Store {
     this.id = id
     this.account = account
     this.blockNumber = null
-    this.fitness = Math.floor(Math.random() * 10000) // TODO: replace with real fitness
+    this.fitness = 0
     this.DNA = constants.DNA
     this.eth = undefined
     this.x = 0
     this.y = 0
+    this.doneBroadcast = false
+
+    this.callback = () => {}
   }
 
   async setEth () {
@@ -45,22 +50,36 @@ class Store {
     this.blockNumber = blockNumber
 
     console.log('BLOCKNUMBER', this.blockNumber)
+    if (this.doneBroadcast === true && blockNumber % 1000 > 0 && blockNumber % 1000 < 100) {
+      this.doneBroadcast = false
+    }
 
-    // TODO: call callback when a certain number has been reached
+    if (this.doneBroadcast === false && blockNumber % 1000 > 900 && blockNumber % 1000 < 1000) {
+      // TODO: call genetics
+      this.doneBroadcast = true
+      this.callback()
+    }
   }
 }
 
-async function geneticsProcess (Genetics) {
+async function geneticsSharing (Genetics) {
+  console.log('Genetic started')
+
+  let n = 2
+
   await Genetics.setAgents()
   await Genetics.announceFitness()
-  // await Genetics.checkIfDead()
-  // await Genetics.announceChildrenTokens()
-  // await Genetics.announcePairs()
-  // await Genetics.procreate()
+  await sleep.sleep(n)
+
+  await Genetics.announceChildrenTokens()
+  await sleep.sleep(n)
+
+  await Genetics.announcePairs()
+  await sleep.sleep(n)
 }
 
 async function getContract (name) {
-  return fetch(`${constants.CONTRACTS_URL}/${name}`)
+  return fetch(`${constants.CONTRACTS_URL}/${name}`, { method: 'get' }, 5000, 'timeout')
     .then(res => res.json())
 }
 
@@ -72,10 +91,15 @@ async function main () {
   await store.setEth()
 
   // Register on k8s and blockchain
-  register(account.address)
+  await register(account.address)
   await store.eth.createDrone(constants.PARENT1, constants.PARENT2, store.DNA)
 
   const Genetics = GeneticsFunction(store)
+  store.callback = async () => {
+    await Genetics.checkIfDead()
+    await Genetics.procreate()
+  }
+
   let geneticRoutes = require('./genetics/routes')(Genetics)
 
   app.use('/genetic/', geneticRoutes)
@@ -91,32 +115,46 @@ async function main () {
     }
   })
 
-  geneticsProcess(Genetics)
-
+  let counter = 0
   while (1) {
-    let discoveredWorld = store.eth.getDiscoverdWorldSize(store.account)
+    if (counter % 10 === 0) {
+      await geneticsSharing(Genetics)
+    }
+
+    await sleep.sleep(1)
+
+    if (counter % 100 === 0) {
+      await Genetics.checkIfDead()
+      await Genetics.procreate()
+    }
+
+    let discoveredWorld = await store.eth.getDiscoveredWorldSize()
+
     let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
     let rand = Math.random()
     if (rand > undiscoverd) {
-      let cor = FindNodeCheck(store.x, store.y)
+      let cor = await FindNodeCheck(store)
+
       store.x = cor.x
       store.y = cor.y
-      locate(store)
+      await locate(store)
     } else {
-      // TODO find node to Mine
-      let node = FindNode(store.x, store.y, store.DNA)
+      let node = await FindNode(store.x, store.y, store.DNA)
       if (node === null && undiscoverd !== 0) {
-        let cor = FindNodeCheck(store.x, store.y)
+        let cor = await FindNodeCheck(store)
+
         store.x = cor.x
         store.y = cor.y
-        locate(store)
+        await locate(store)
       } else {
         store.fitness += node.fitness
         store.x = node.x
         store.y = node.y
-        mine(store)
+        await mine(store)
       }
     }
+
+    counter++
   }
 }
 
