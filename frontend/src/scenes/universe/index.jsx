@@ -52,11 +52,44 @@ function Mars() {
     return [loader.load(MAP_IMG_LOC), loader.load(BUMP_IMG_LOC)]
   }, [MAP_IMG_LOC, BUMP_IMG_LOC]);
 
+  // create a buffer with color data
+  const width = 100;
+  const height = 100;
+  var size = width * height;
+  var data = new Uint8Array( 3 * size );
+
+  const colors = [new THREE.Color('red'), new THREE.Color('blue'), new THREE.Color('orange')];
+
+  for ( var i = 0; i < size; i ++ ) {
+
+    var stride = i * 3;
+
+    const color = colors[i % 3];
+
+    var r = Math.floor( color.r * 255 );
+    var g = Math.floor( color.g * 255 );
+    var b = Math.floor( color.b * 255 );
+
+    data[ stride ] = r;
+    data[ stride + 1 ] = g;
+    data[ stride + 2 ] = b;
+
+  }
+
+  // used the buffer to create a DataTexture
+
+  var texture = new THREE.DataTexture( data, width, height, THREE.RGBFormat );
+  texture.needsUpdate = true
+
   return (
     <group ref={group}>
       <animated.mesh position={[0,0,0]}>
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
-        <meshPhongMaterial attach="material" map={mapTexture} bumpMap={bumpTexture} bumpScale={8} />
+        <meshPhongMaterial attach="material" map={mapTexture} bumpMap={bumpTexture} bumpScale={8} opacity={0.9} transparent />
+      </animated.mesh>
+      <animated.mesh position={[0,0,0]}>
+        <sphereGeometry attach="geometry" args={[2, 32, 32]} />
+        <meshPhongMaterial attach="material" map={texture} />
       </animated.mesh>
     </group>
   );
