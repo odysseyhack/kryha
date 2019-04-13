@@ -18,18 +18,6 @@
               {
                 "name": "CLUSTER",
                 "value": "TRUE"
-              },
-              {
-                "name": "APP_RPC",
-                "value": "http://ganache:8545"
-              },
-              {
-                "name": "DRONE_ADDRESS",
-                "value": "0x61eD2C6d4cb180f48503e8D55A5e743bbf3f8E79"
-              },
-              {
-                "name": "WORLD_ADDRESS",
-                "value": "0x4fBa6E88bFE2A892baf7876DbD0CDd5719cd8DB7"
               }
             ]
           }
