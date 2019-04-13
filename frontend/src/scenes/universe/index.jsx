@@ -60,7 +60,7 @@ function createData(data, size) {
  */
 async function fetchWorldState() {
   try {
-    const data = await fetch('http://localhost:9001/world/');
+    const data = await fetch('http://13.80.136.159:9001/world/');
     const json = await data.json();
     return json;
   } catch {

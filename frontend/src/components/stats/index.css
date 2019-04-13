@@ -1,0 +1,32 @@
+.Stats {
+  position: absolute;
+  z-index: 100;
+  top: 80px;
+  right: 30px;
+  background: rgba(255,255,255,0.02);
+  padding: 20px;
+  width: 250px;
+  border-radius: 3px;
+}
+
+.Stat {
+  display: flex;
+  color: #fff;
+  justify-content: space-between;
+  text-transform: uppercase;
+  font-size: 17px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.Stat:last-child {
+  margin-bottom: 0;
+}
+
+.Stat .title {
+  
+}
+
+.Stat .value {
+  align-self: flex-end;
+}
