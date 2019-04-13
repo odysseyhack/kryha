@@ -34,6 +34,7 @@ class Store {
     this.eth = undefined
     this.x = 0
     this.y = 0
+    this.doneBroadcast = false
   }
 
   async setEth () {
@@ -47,7 +48,14 @@ class Store {
     this.blockNumber = blockNumber
 
     console.log('BLOCKNUMBER', this.blockNumber)
+    if (this.doneBroadcast === true && blockNumber % 1000 > 0 && blockNumber % 1000 < 100) {
+      this.doneBroadcast = false
+    }
 
+    if (this.doneBroadcast === false && blockNumber % 1000 > 900 && blockNumber % 1000 < 1000) {
+      // TODO: call genetics
+      this.doneBroadcast = true
+    }
     // TODO: call callback when a certain number has been reached
   }
 }
