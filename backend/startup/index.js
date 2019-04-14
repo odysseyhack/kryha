@@ -7,6 +7,15 @@ const deploymentManifest = require('./startup-drone.json')
 
 let POPSIZE = Number(require('./constants').POPSIZE)
 
+function randomDna () {
+  let s = ''
+  for (let i = 0; i < 6; i++) {
+    s = s.concat(String.fromCharCode(Math.round(Math.random() * 10) + 100))
+  }
+
+  return s
+}
+
 async function deploy () {
   let name = 'q'.concat(uuidv4().replace(/-/g, ''))
   try {
@@ -33,6 +42,13 @@ async function deploy () {
     deploymentManifest.spec.template.metadata.labels.app = name
     deploymentManifest.spec.selector.app = name
     deploymentManifest.spec.selector.matchLabels.app = name
+
+    let env = deploymentManifest.spec.template.spec.containers[0].env
+    env = env.filter(e => ['DNA', 'PARENT1', 'PARENT2'].indexOf(e.name) < 0)
+    deploymentManifest.spec.template.spec.containers[0].env = [...env, {
+      name: 'DNA',
+      value: randomDna()
+    }]
 
     console.log(deploymentManifest.spec.template)
     // Create a new Deployment.
