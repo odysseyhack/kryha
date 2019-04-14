@@ -34,9 +34,15 @@ class Store {
     this.eth = undefined
     this.x = 0
     this.y = 0
-    this.doneBroadcast = false
+    this.procreated = false
+    this.dead = false
 
-    this.callback = () => {}
+    this.miningAllowed = true
+
+    this.broadcasts = 0
+
+    this.callbackProcreate = () => {}
+    this.callbackShare = () => {}
   }
 
   async setEth () {
@@ -50,14 +56,21 @@ class Store {
     this.blockNumber = blockNumber
 
     console.log('BLOCKNUMBER', this.blockNumber)
-    if (this.doneBroadcast === true && blockNumber % 1000 > 0 && blockNumber % 1000 < 100) {
-      this.doneBroadcast = false
+    if (!this.procreated && blockNumber % 100 > 0 && blockNumber % 100 < 10) {
+      console.log('STARING PROCREATION')
+      this.miningAllowed = false
+      this.callbackProcreate()
+      this.broadcasts = 0
+      this.procreated = true
+      this.miningAllowed = true
     }
 
-    if (this.doneBroadcast === false && blockNumber % 1000 > 900 && blockNumber % 1000 < 1000) {
-      // TODO: call genetics
-      this.doneBroadcast = true
-      this.callback()
+    if (this.broadcasts < 10 && blockNumber % 100 > 10 * this.broadcasts && blockNumber % 100 < 100) {
+      console.log('STARING SHARING')
+      this.callbackShare()
+
+      this.broadcasts++
+      this.procreated = false
     }
   }
 }
@@ -94,7 +107,8 @@ async function main () {
   await store.eth.createDrone(constants.PARENT1, constants.PARENT2, store.DNA)
 
   const Genetics = GeneticsFunction(store)
-  store.callback = async () => {
+  store.callbackShare = () => geneticsSharing(Genetics)
+  store.callbackProcreate = async () => {
     fetch(`${constants.WORLD_URL}/drone/updateDrone`, {
       method: 'put',
       headers: {
@@ -106,7 +120,8 @@ async function main () {
       })
     }, 5000, 'Timeout').catch(() => console.warn('Putting fitness failed'))
 
-    await Genetics.checkIfDead()
+    store.dead = await Genetics.checkIfDead()
+    if (store.dead) return
     await Genetics.procreate()
 
     // Reset the fitness after procreation to give kids a chance
@@ -128,34 +143,28 @@ async function main () {
     }
   })
 
-  let counter = 0
   while (1) {
     console.log('Fitness: ', store.fitness)
-    if (counter % 100 === 0) {
-      await geneticsSharing(Genetics)
-    }
-
     // To have some delay
     await sleep.sleep(1)
 
-    if (counter % 500 === 0) {
-      let dead = await Genetics.checkIfDead()
-
-      if (dead) break
-      await Genetics.procreate()
-    }
+    if (store.dead) break
+    if (!store.miningAllowed) continue
 
     let discoveredWorld = await store.eth.getDiscoveredWorldSize()
 
     console.log('discovering')
+
     let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
     let rand = Math.random()
 
+    console.log(undiscoverd, rand, discoveredWorld.DiscoveredNodes, discoveredWorld.WorldSize)
+
     console.log('discovering done')
 
-    if (rand > undiscoverd) {
+    if (rand < undiscoverd) {
       console.log('locating')
-      let cor = await FindNodeCheck(store)
+      let cor = await FindNodeCheck(store).catch(e => console.log('Find Node check'))
 
       store.x = cor.x
       store.y = cor.y
@@ -163,27 +172,25 @@ async function main () {
 
       console.log('locating done')
     } else {
-      console.log('mining')
       let node = await FindNode(store.x, store.y, store.DNA)
 
       if (!node) continue
       if (node === null && undiscoverd !== 0) {
-        let cor = await FindNodeCheck(store)
+        let cor = await FindNodeCheck(store).catch(e => console.log('Find Node check'))
 
         store.x = cor.x
         store.y = cor.y
         await locate(store).catch(e => console.log('Locate 2 error: ', e.name))
       } else {
+        console.log('mining')
         store.fitness += node.fit
         store.x = node.x
         store.y = node.y
-        await mine(store).catch(e => console.log('Mine error: ', e.name))
+        await mine(store).catch(e => console.log('Mine error: ', e.name, e))
       }
 
       console.log('mining done')
     }
-
-    counter++
   }
 }
 
