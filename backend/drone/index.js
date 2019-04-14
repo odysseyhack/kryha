@@ -52,22 +52,22 @@ class Store {
     this.eth = eth.ethFunctions(this, Drone, World)
   }
 
-  updateBlockNumber (blockNumber) {
+  async updateBlockNumber (blockNumber) {
     this.blockNumber = blockNumber
 
     console.log('BLOCKNUMBER', this.blockNumber)
-    if (!this.procreated && blockNumber % 100 > 0 && blockNumber % 100 < 10) {
+    if (!this.procreated && blockNumber % 50 > 0 && blockNumber % 50 < 10) {
       console.log('STARING PROCREATION')
       this.miningAllowed = false
-      this.callbackProcreate()
+      await this.callbackProcreate()
       this.broadcasts = 0
       this.procreated = true
       this.miningAllowed = true
     }
 
-    if (this.broadcasts < 10 && blockNumber % 100 > 10 * this.broadcasts && blockNumber % 100 < 100) {
+    if (this.broadcasts < 10 && blockNumber % 50 > 10 * this.broadcasts && blockNumber % 50 < 50) {
       console.log('STARING SHARING')
-      this.callbackShare()
+      await this.callbackShare()
 
       this.broadcasts++
       this.procreated = false
@@ -149,10 +149,11 @@ async function main () {
   while (1) {
     console.log('Fitness: ', store.fitness)
     // To have some delay
+    console.log('sleep')
     await sleep.sleep(1)
 
     if (store.dead) break
-    if (!store.miningAllowed) continue
+    // if (!store.miningAllowed) continue
 
     let discoveredWorld = await store.eth.getDiscoveredWorldSize()
 
