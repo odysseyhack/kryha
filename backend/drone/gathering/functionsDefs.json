@@ -2,45 +2,45 @@
     "array": [
       {
         "name": "AirFromNature",
-        "air": 100,
+        "air": 50,
         "resources": 0,
-        "nature": -100,
+        "nature": -50,
         "water": 0
       },
       {
         "name": "PlantFromWaterAndAir",
-        "air": -100,
+        "air": -50,
         "resources": 0,
-        "nature": 200,
-        "water": -100
+        "nature": 100,
+        "water": -50
       },
       {
         "name": "WaterFromResources",
-        "air": 100,
+        "air": 50,
         "resources": 0,
-        "nature": -100,
+        "nature": -50,
         "water": 0
       },
       {
         "name": "AirFromResources",
-        "air": 100,
-        "resources": -100,
+        "air": 50,
+        "resources": -50,
         "nature": 0,
         "water": 0
       },
       {
         "name": "ResourcesFromNature",
         "air": 0,
-        "resources": 100,
-        "nature": -200,
+        "resources": 50,
+        "nature": -100,
         "water": 0
       },
       {
         "name": "WaterFromNature",
         "air": 0,
         "resources": 0,
-        "nature": -100,
-        "water": 100
+        "nature": -50,
+        "water": 50
       }
     ]
   }
