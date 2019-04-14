@@ -42,7 +42,7 @@ function normalizeVector (vec) {
 function calculateFunctionScore (score, func, point) {
   point = normalizeVector(point)
   func = normalizeVector(func)
-  let idealVec = { air: 1, resources: 1, water: 1, nature: 1 }
+  let idealVec = { air: 0.5, resources: 0.5, water: 0.5, nature: 0.5 }
   let newVec = { air: point.air + func.air * score, resources: point.resources + func.resources * score, water: point.water + func.water * score, nature: point.nature + func.nature * score }
 
   let a = calculateDistanceAreaVector(newVec, idealVec)
@@ -75,5 +75,7 @@ async function findClosestNode (ownX, ownY, DNA) {
 
   return maxObj
 }
+
+console.log(findClosestNode(0, 0, 'fgjdddd'))
 
 module.exports = findClosestNode
