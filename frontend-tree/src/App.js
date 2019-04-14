@@ -41,12 +41,16 @@ class NodeLabel extends React.PureComponent {
       <div className={classes}>
         <div className="wrapper">
           <div className="name">{nodeData.address}</div>
-          {nodeData.dna && nodeData.dna.length > 0 &&
-          (
-            <div className="data">
+          <div className="data">
+            {nodeData.dna && nodeData.dna.length > 0 &&
+            (
               <div className="dna"><div className="title">DNA</div><div>{nodeData.dna[0].substring(0, 30)}</div></div>
-            </div>
-          )}
+            )}
+            {nodeData.fitness > -1 &&
+            (
+              <div className="fitness"><div className="title">Fitness</div><div>{nodeData.fitness}</div></div>
+            )}
+          </div>
         </div>
         {/* {nodeData._children && 
           <button>{nodeData._collapsed ? 'Expand' : 'Collapse'}</button>
@@ -88,7 +92,14 @@ class App extends Component {
       drones: [{ address: "0x0000000000000000000000000000000000000000", children: [] }],
     };
     this.fetchData();
+  }
+
+  componentDidMount() {
     this.fetchInterval = setInterval(() => this.fetchData(), 3000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.fetchInterval);
   }
 
   fetchData() {
@@ -118,7 +129,7 @@ class App extends Component {
               }
             }}
             translate={{ x: 516.925, y: 469.5 }}
-            nodeSize={{ x: 800, y: 140 }}
+            nodeSize={{ x: 800, y: 180 }}
             nodeSvgShape={{shape: 'square', shapeProps: {r: 1}}}
             // textLayout={{textAnchor: "start", x: 20, y: -10, transform: undefined }}
             styles={{
