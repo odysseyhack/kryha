@@ -153,7 +153,7 @@ async function main () {
     await sleep.sleep(1)
 
     if (store.dead) break
-    if (store.miningAllowed) continue
+    // if (!store.miningAllowed) continue
 
     let discoveredWorld = await store.eth.getDiscoveredWorldSize()
 
