@@ -21,13 +21,12 @@ async function getWorld () {
     })
 }
 
-function getDnaNumbers(DNA){
-    let DNAnumbers = [];
-    for(var i = 0; i < DNA.length; i++){
-        DNAnumbers.push((DNA.charCodeAt(i) - 100) / 10);
-    }
-    return DNAnumbers;
-
+function getDnaNumbers (DNA) {
+  let DNAnumbers = []
+  for (var i = 0; i < DNA.length; i++) {
+    DNAnumbers.push((DNA.charCodeAt(i) - 100) / 10)
+  }
+  return DNAnumbers
 }
 
 function normalizeVector (vec) {
@@ -69,9 +68,14 @@ async function findClosestNode (ownX, ownY, DNA) {
   var maxFit = 0
   var maxObj = null
 
-  pointFitness.map(function (obj) {
-    if (obj.fit > maxFit) maxObj = obj
-  })
+  for (const obj of pointFitness) {
+    if (obj.fit > maxFit) {
+      maxObj = obj
+      maxFit = obj.fit
+    }
+  }
+
+  console.log(maxObj)
 
   return maxObj
 }
