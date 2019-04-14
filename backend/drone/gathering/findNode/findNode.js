@@ -75,11 +75,7 @@ async function findClosestNode (ownX, ownY, DNA) {
     }
   }
 
-  console.log(maxObj)
-
   return maxObj
 }
-
-console.log(findClosestNode(0, 0, 'fgjdddd'))
 
 module.exports = findClosestNode
