@@ -9,6 +9,16 @@ const announce = require('./helper/announce')
 const firstBy = require('thenby')
 const utils = require('web3-utils')
 
+// TODO: remove this workaround
+function randomDna () {
+  let s = ''
+  for (let i = 0; i < 6; i++) {
+    s = s.concat(String.fromCharCode(Math.round(Math.random() * 10) + 100))
+  }
+
+  return s
+}
+
 module.exports = function (store) {
   return new class Genetics {
     constructor () {
@@ -30,8 +40,13 @@ module.exports = function (store) {
         })
 
       for (const a of result) {
+        let dna = a.dna[0]
+
+        if (!dna) dna = randomDna()
+        else utils.hexToUtf8(dna)
+
         this.agents[a.address] = {
-          dna: utils.hexToUtf8(a.dna[0]), // TODO: change it being an array in future; and not bytes
+          dna, // TODO: change it being an array in future; and not bytes
           id: a.address
         }
       }
