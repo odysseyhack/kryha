@@ -75,7 +75,6 @@ async function geneticsSharing (Genetics) {
   await sleep.sleep(n)
 
   await Genetics.announcePairs()
-  await sleep.sleep(n)
 }
 
 async function getContract (name) {
@@ -96,8 +95,22 @@ async function main () {
 
   const Genetics = GeneticsFunction(store)
   store.callback = async () => {
+    fetch(`${constants.WORLD_URL}/drone/updateDrone`, {
+      method: 'put',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fitness: store.fitness,
+        address: store.address
+      })
+    }, 5000, 'Timeout').catch(() => console.warn('Putting fitness failed'))
+
     await Genetics.checkIfDead()
     await Genetics.procreate()
+
+    // Reset the fitness after procreation to give kids a chance
+    store.fitness = 0
   }
 
   let geneticRoutes = require('./genetics/routes')(Genetics)
@@ -117,41 +130,57 @@ async function main () {
 
   let counter = 0
   while (1) {
-    if (counter % 10 === 0) {
+    console.log('Fitness: ', store.fitness)
+    if (counter % 100 === 0) {
       await geneticsSharing(Genetics)
     }
 
+    // To have some delay
     await sleep.sleep(1)
 
-    if (counter % 100 === 0) {
-      await Genetics.checkIfDead()
+    if (counter % 500 === 0) {
+      let dead = await Genetics.checkIfDead()
+
+      if (dead) break
       await Genetics.procreate()
     }
 
     let discoveredWorld = await store.eth.getDiscoveredWorldSize()
 
+    console.log('discovering')
     let undiscoverd = 1 - (discoveredWorld.DiscoveredNodes / discoveredWorld.WorldSize)
     let rand = Math.random()
+
+    console.log('discovering done')
+
     if (rand > undiscoverd) {
+      console.log('locating')
       let cor = await FindNodeCheck(store)
 
       store.x = cor.x
       store.y = cor.y
-      await locate(store)
+      await locate(store).catch(e => console.log('Locate error: ', e.name))
+
+      console.log('locating done')
     } else {
+      console.log('mining')
       let node = await FindNode(store.x, store.y, store.DNA)
+
+      if (!node) continue
       if (node === null && undiscoverd !== 0) {
         let cor = await FindNodeCheck(store)
 
         store.x = cor.x
         store.y = cor.y
-        await locate(store)
+        await locate(store).catch(e => console.log('Locate error: ', e.name))
       } else {
-        store.fitness += node.fitness
+        store.fitness += node.fit
         store.x = node.x
         store.y = node.y
-        await mine(store)
+        await mine(store).catch(e => console.log('Mine error: ', e.name))
       }
+
+      console.log('mining done')
     }
 
     counter++

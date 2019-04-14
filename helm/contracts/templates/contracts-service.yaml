@@ -6,16 +6,14 @@ metadata:
     kompose.version: 1.17.0 ()
   creationTimestamp: null
   labels:
-    io.kompose.service: world
-  name: world
+    io.kompose.service: contracts
+  name: contracts
 spec:
-  loadBalancerIP: 13.80.136.159
-  type: LoadBalancer
   ports:
-  - name: "9001"
-    port: 9001
-    targetPort: 9001
+  - name: "9002"
+    port: 9002
+    targetPort: 9002
   selector:
-    io.kompose.service: world
+    io.kompose.service: contracts
 status:
   loadBalancer: {}

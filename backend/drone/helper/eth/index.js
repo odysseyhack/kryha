@@ -132,5 +132,4 @@ function ethFunctions (store, Drone, World) {
   }
 }
 
-// TODO: export contract functions
 module.exports = { newAccount, ethFunctions }
