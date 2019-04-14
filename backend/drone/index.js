@@ -159,7 +159,7 @@ async function main () {
 
       store.x = cor.x
       store.y = cor.y
-      await locate(store).catch(e => console.log('Locate error: ', e.name))
+      await locate(store).catch(e => console.log('Locate 1 error: ', e.name))
 
       console.log('locating done')
     } else {
@@ -172,7 +172,7 @@ async function main () {
 
         store.x = cor.x
         store.y = cor.y
-        await locate(store).catch(e => console.log('Locate error: ', e.name))
+        await locate(store).catch(e => console.log('Locate 2 error: ', e.name))
       } else {
         store.fitness += node.fit
         store.x = node.x
