@@ -46,7 +46,15 @@
 }
 
 .Drone .dna {
-  margin-top: 9px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.Drone .fitness {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .dna .title {
