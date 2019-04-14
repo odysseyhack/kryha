@@ -5,30 +5,13 @@ import get from 'lodash/get';
 import cx from 'classnames';
 import concat from 'lodash/concat';
 import takeRight from 'lodash/takeRight';
-import cloneDeep from 'lodash/cloneDeep';
 import './App.css';
-
-const treeData = [
-  {
-    address: 'Top Level',
-    children: [
-      {
-        address: 'Level 2: A',
-      },
-      {
-        name: 'Level 2: B',
-      },
-    ],
-  },
-];
 
 function Logo() {
   return (
     <div className="Logo">horizon</div>
   );
 }
-
-
 
 class NodeLabel extends React.PureComponent {
   render() {
@@ -121,6 +104,7 @@ class App extends Component {
             data={this.state.drones}
             transitionDuration={0}
             allowForeignObjects
+            collapsible={false}
             nodeLabelComponent={{
               render: <NodeLabel className='Drone' />,
               foreignObjectWrapper: {
