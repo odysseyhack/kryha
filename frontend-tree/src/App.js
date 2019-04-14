@@ -41,6 +41,12 @@ class NodeLabel extends React.PureComponent {
       <div className={classes}>
         <div className="wrapper">
           <div className="name">{nodeData.address}</div>
+          {nodeData.dna && nodeData.dna.length > 0 &&
+          (
+            <div className="data">
+              <div className="dna"><div className="title">DNA</div><div>{nodeData.dna[0].substring(0, 30)}</div></div>
+            </div>
+          )}
         </div>
         {/* {nodeData._children && 
           <button>{nodeData._collapsed ? 'Expand' : 'Collapse'}</button>
@@ -51,7 +57,7 @@ class NodeLabel extends React.PureComponent {
 }
 
 function convertToTreeData(drones, keyPaths, data) {
-  return drones;
+  // return drones;
   const newDrones = [...drones];
   // const newKeyPaths = {...keyPaths};
   // const addressesInKeyPaths = Object.keys(keyPaths);
@@ -61,19 +67,15 @@ function convertToTreeData(drones, keyPaths, data) {
     if (addressesInKeyPaths.includes(drone.address)) {
       continue;
     }
-    console.log(drone.parent1);
     if (addressesInKeyPaths.includes(drone.parent1)) {
-      console.log('it incliudes parent', drone.parent1);
       const idx = get(drones, concat(keyPaths[drone.parent1], 'children')).length;
-      if (idx > 10) continue;
+      // if (idx > 10) continue;
       const keyPath = concat(keyPaths[drone.parent1], 'children', idx);
-      set(newDrones, keyPath, drone);
+      set(newDrones, keyPath, { ...drone, children: [] });
       keyPaths[drone.address] = keyPath;
-      console.log(keyPaths);
       continue;
     }
   }
-  console.log(newDrones);
   return [newDrones, keyPaths];
 }
 
@@ -86,7 +88,7 @@ class App extends Component {
       drones: [{ address: "0x0000000000000000000000000000000000000000", children: [] }],
     };
     this.fetchData();
-    // this.fetchInterval = setInterval(() => this.fetchData(), 10000);
+    this.fetchInterval = setInterval(() => this.fetchData(), 3000);
   }
 
   fetchData() {
@@ -94,7 +96,6 @@ class App extends Component {
         return response.json();
       }).then((data) => {
         const newData = takeRight(data, data.length - this.state.lastCount);
-        console.log(data.length, this.state.lastCount);
         const [drones, keyPaths] = convertToTreeData(this.state.drones, this.state.keyPaths, newData);
         this.setState({ drones, keyPaths, lastCount: data.length });
       })
