@@ -10,7 +10,7 @@ async function announce (endpoint, actors, data) {
     let slicedActor = actor.slice(1).toLowerCase()
     let uri = `http://${slicedActor}:3000/genetic/${endpoint}`
 
-    console.log(`Calling ${uri} with ${data}`)
+    // console.log(`Calling ${uri} with ${data}`)
     fetches.push(fetch(uri, {
       method: 'post',
       headers: {
@@ -32,9 +32,9 @@ async function announce (endpoint, actors, data) {
   let deadNodes = results.filter(v => !v.response)
   let aliveNodes = results.filter(v => v.response)
 
-  for (const dead of deadNodes) {
-    console.log(`Node: ${dead.id} is dead`)
-  }
+  // for (const dead of deadNodes) {
+  // console.log(`Node: ${dead.id} is dead`)
+  // }
 
   for (const alive of aliveNodes) {
     if (!alive.success) {

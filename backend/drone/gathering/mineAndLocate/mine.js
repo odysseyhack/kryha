@@ -17,8 +17,11 @@ async function mine (store) {
     newState.resources += Math.ceil(funcs[i].resources * dnaNum[i])
     newState.nature += Math.ceil(funcs[i].nature * dnaNum[i])
     newState.water += Math.ceil(funcs[i].water * dnaNum[i])
-    await store.eth.mineResources(store.x, store.y, newState.air, newState.resources, newState.nature, newState.water)
   }
+
+  console.log(newState)
+
+  await store.eth.mineResources(store.x, store.y, newState.air, newState.resources, newState.nature, newState.water)
 }
 
 module.exports = mine
