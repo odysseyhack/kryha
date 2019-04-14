@@ -47,8 +47,34 @@ router.get('/list/dead', async (req, res, next) => {
   }
 })
 
+router.get('/list/family', async (req, res, next) => {
+  try {
+    const root = '0x0000000000000000000000000000000000000000'
+
+    const recursion = async function(parent) {
+      const children = await Drone.find({ $or: [{parent1: parent}, {parent2: parent}]}).exec()
+      let tree = {}
+
+      let x = {}
+      for (const child of children) {
+        x[child] = await recursion(child)
+      }
+      
+      tree[parent] = x
+
+      return tree
+    }
+
+    return res.status(200).json(await recursion(root))
+  } catch (error) {
+    console.log("recursion error", error)
+    next(error)
+  }
+})
+
 router.put('/updateDrone', async (req, res, next) => {
   try {
+    console.log("updatedrone", req.body)
     const drone = await Drone.findOneAndUpdate({ address: req.body.address }, req.body, { upsert: true }).exec()
     return res.status(200).json(drone)
   } catch (error) {

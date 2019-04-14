@@ -143,6 +143,9 @@ async function main () {
     }
   })
 
+  // update initital location
+  await store.eth.mineResources(store.x, store.y, 0, 0, 0, 0)
+
   while (1) {
     console.log('Fitness: ', store.fitness)
     // To have some delay
