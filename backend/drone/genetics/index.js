@@ -43,7 +43,7 @@ module.exports = function (store) {
         let dna = a.dna[0]
 
         if (!dna) dna = randomDna()
-        else utils.hexToUtf8(dna)
+        else dna = utils.hexToUtf8(dna)
 
         this.agents[a.address] = {
           dna, // TODO: change it being an array in future; and not bytes
