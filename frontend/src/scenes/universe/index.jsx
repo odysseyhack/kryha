@@ -198,7 +198,6 @@ function Mars({ showRegions, showDrones }) {
     const date = new Date();
     if (date.getSeconds() !== prevSeconds) {
       fetchWorldState().then(data => updateDataTexture(raster, size, data));
-      fetchDronesState().then(data => setDroneData(data));
       prevSeconds = date.getSeconds();
     }
   });
@@ -215,11 +214,11 @@ function Mars({ showRegions, showDrones }) {
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
         <meshPhongMaterial attach="material" map={mapTexture} bumpMap={bumpTexture} bumpScale={8} specular={new THREE.Color('#000000')} />
       </animated.mesh>
-      <animated.mesh visible={showRegions} position={[0,0,0]}>
+      <animated.mesh visible={showRegions} onClick={e => console.log(e)} position={[0,0,0]}>
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
         <animated.meshPhongMaterial attach="material" ref={raster} map={rasterTexture} opacity={0.2} transparent />
       </animated.mesh>
-      <Drones data={droneData}/>
+      {/* <Drones data={droneData}/> */}
       {/* <animated.mesh visible={showDrones} position={[0,0,0]}>
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
         <animated.meshPhongMaterial attach="material" ref={drones} map={dronesTexture} opacity={0.2} transparent />
@@ -269,7 +268,13 @@ function Universe({ showRegions }) {
   );
 }
 
-function Drones({ data }) {
+function updateDrones(dronesRef, data) {
+  console.log(dronesRef);
+  console.log(data);
+}
+
+function Drones() {
+  let drones = useRef();
   // create circle shape
   const circleRadius = 0.05;
   const circleShape = new THREE.Shape();
@@ -279,13 +284,26 @@ function Drones({ data }) {
   circleShape.quadraticCurveTo( - circleRadius, - circleRadius, - circleRadius, 0 );
   circleShape.quadraticCurveTo( - circleRadius, circleRadius, 0, circleRadius );
 
+  const data = new Array(100).fill(2).map(i => ({ x: i, y: i }));
+
+  // Continuously update the GL render
+  let prevSeconds = 0;
+  useRender(() => {
+    // Continuously update the RASTER texture
+    const date = new Date();
+    if (date.getSeconds() !== prevSeconds) {
+      fetchDronesState().then(data => updateDrones(drones, data));
+      prevSeconds = date.getSeconds();
+    }
+  });
+
+  console.log(data);
   return (
-    <group>
+    <group ref={drones}>
       {
-        data &&
         data.map((drone, index) => {
           if (drone.x && drone.y) {
-            return <mesh key={index} geometry={new THREE.ShapeBufferGeometry( circleShape )} material={new THREE.MeshPhongMaterial( { color: 0x00f000, side: THREE.DoubleSide } )} position={[drone.x,drone.y,2]} scale={[1,1,1]} />
+            return <mesh key={index} geometry={new THREE.SphereGeometry( circleShape )} material={new THREE.MeshPhongMaterial( { color: 0x00f000, side: THREE.DoubleSide } )} position={[drone.x,drone.y,2]} scale={[1,1,1]} />
           } else {
             return null
           }

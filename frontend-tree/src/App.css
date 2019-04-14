@@ -1,0 +1,57 @@
+#root, .App {
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.App {
+  position: fixed;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+
+  background: #2e3b41;
+}
+
+.Logo {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  color: #fff;
+  font-size: 27px;
+  font-weight: 600;
+  font-family: 'Eina01-Bold', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  line-height: 1;
+}
+
+.Drone {
+  padding: 2px;
+  display: flex;
+}
+
+.Drone .wrapper {
+  font-family: 'Eina01-Bold', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  text-transform: lowercase;
+  color: #5ffdff;
+  border-radius: 9px;
+  line-height: 1;
+  background: rgba(0,0,0,.4);
+  padding: 15px 20px;
+}
+
+.Drone.alive .wrapper {
+  background: rgba(0, 255, 225, 0.5);
+  color: #00ffec;
+}
+
+.Drone.dead .wrapper {
+  background: #dc02021c;
+  color: #b92c00;
+  border: 1px solid #b92c00;
+}
