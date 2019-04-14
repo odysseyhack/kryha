@@ -1,14 +1,22 @@
 import * as THREE from 'three/src/Three';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 // A THREE.js React renderer, see: https://github.com/drcmda/react-three-fiber
-import { Canvas, useRender, useThree } from 'react-three-fiber';
+import { Canvas, useRender } from 'react-three-fiber';
 // A React animation lib, see: https://github.com/react-spring/react-spring
 import { useSpring, animated } from 'react-spring/three';
-import OrbitControls from 'three-orbitcontrols';
-import max from 'lodash/max';
 import './index.css';
 
-
+async function fetchDronesState() {
+  try {
+    const data = await fetch('http://13.80.136.159:9001/drone/list/alive');
+    const drones = await data.json();
+    return drones.filter((drone) => drone.x && drone.y);
+  } catch {
+    console.log('error');
+    return null;
+  }
+  return null;
+}
 // function Octahedron() {
 //   const [active, setActive] = useState(false)
 //   const [hovered, setHover] = useState(false)
@@ -60,37 +68,14 @@ function createData(data, size) {
  */
 async function fetchWorldState() {
   try {
-    const data = await fetch('http://13.80.136.159:9001/world');
-    const json = await data.json();
-    return json;
+    const data = await fetch('http://localhost:9001/world/');
+    console.log(JSON.stringify(await data.json()));
   } catch {
     console.log('error');
     return null;
   }
   return null;
 }
-
-/**
- * Fetch drones state data.
- */
-async function fetchDronesState() {
-  try {
-    const data = await fetch('http://13.80.136.159:9001/drone/list/alive');
-    const json = await data.json();
-    return json;
-  } catch {
-    console.log('error');
-    return null;
-  }
-  return null;
-}
-
-const COLORS = {
-  air: new THREE.Color('white'),
-  water: new THREE.Color('blue'),
-  resources: new THREE.Color('brown'),
-  nature: new THREE.Color('green'),
-};
 
 /**
  * Update every block in the given data texture.
@@ -99,17 +84,12 @@ const COLORS = {
  * @param {*} worldState a width x height x 3 array for the RGB color for each x,y position
  */
 function updateDataTexture(textRef, size, worldState) {
-  if (!worldState) return;
   for ( var i = 0; i < size; i ++ ) {
-    const obj = worldState[i];
-    delete obj.x;
-    delete obj.y;
-    const bestType = Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b);
-    const color = COLORS[bestType];
     var stride = i * 3;
-    var r = Math.floor( color.r * 255 );
-    var g = Math.floor( color.g * 255 );
-    var b = Math.floor( color.b * 255 );
+
+    var r = Math.floor( Math.random() * 255 );
+    var g = Math.floor( Math.random() * 255 );
+    var b = Math.floor( Math.random() * 255 );
 
     textRef.current.map.image.data.set([r,g,b], stride);
   }
@@ -119,6 +99,7 @@ function updateDataTexture(textRef, size, worldState) {
 const IMG_LOC = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/4273/';
 const MAP_IMG_LOC = IMG_LOC + 'mars-map.jpg';
 const BUMP_IMG_LOC = IMG_LOC + 'mars-bump.jpg';
+const COLORS = [new THREE.Color('white'), new THREE.Color('blue'), new THREE.Color('brown'), new THREE.Color('red')];
 
 function getRasterData() {
   const color = new THREE.Color();
@@ -129,8 +110,7 @@ function getRasterData() {
   return data;
 }
 
-function Mars({ showRegions, showDrones }) {
-  const [droneData, setDroneData] = useState([])
+function Mars() {
   // Create RASTER texture
   const width = 100;
   const height = 100;
@@ -143,7 +123,6 @@ function Mars({ showRegions, showDrones }) {
 
   let group = useRef();
   let raster = useRef();
-  let drones = useRef();
   let theta = 0;
 
   // useEffect(() => {
@@ -169,36 +148,23 @@ function Mars({ showRegions, showDrones }) {
 
   let prevSeconds = 0;
 
-  const { gl, scene, camera } = useThree();
-  const controls = new OrbitControls(camera, gl.domElement);
-  controls.enableZoom = true;
-  controls.addEventListener('change', () => gl.render(scene, camera));
-
-  function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    gl.setSize(window.innerWidth - 40, window.innerHeight - 40);
-  }
-
-  useEffect(() => {
-    window.addEventListener('resize', onWindowResize, false);
-    return () => {
-      window.removeEventListener('resize', onWindowResize, false);
-    };
-  }, [0]);
-
   // Continuously update the GL render
   useRender(() => {
     // const y = Math.sin(THREE.Math.degToRad((theta += 0.08)));
     theta += 0.0015;
     const y = theta;
     group.current.rotation.set(0, y, 0);
-    controls.update();
     // Continuously update the RASTER texture
     const date = new Date();
     if (date.getSeconds() !== prevSeconds) {
-      fetchWorldState().then(data => updateDataTexture(raster, size, data));
+      updateDataTexture(raster, size, []);
       prevSeconds = date.getSeconds();
+
+      fetchDronesState().then(data => {
+        data.filter((drone) => drone.x && drone.y).forEach((drone, i) => {
+          console.log(drone)
+        })
+      })
     }
   });
 
@@ -212,17 +178,12 @@ function Mars({ showRegions, showDrones }) {
     <group ref={group}>
       <animated.mesh position={[0,0,0]}>
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
-        <meshPhongMaterial attach="material" map={mapTexture} bumpMap={bumpTexture} bumpScale={8} specular={new THREE.Color('#000000')} />
+        <meshPhongMaterial attach="material" map={mapTexture} bumpMap={bumpTexture} bumpScale={8} />
       </animated.mesh>
-      <animated.mesh visible={showRegions} onClick={e => console.log(e)} position={[0,0,0]}>
+      <animated.mesh position={[0,0,0]}>
         <sphereGeometry attach="geometry" args={[2, 32, 32]} />
         <animated.meshPhongMaterial attach="material" ref={raster} map={rasterTexture} opacity={0.2} transparent />
       </animated.mesh>
-      {/* <Drones data={droneData}/> */}
-      {/* <animated.mesh visible={showDrones} position={[0,0,0]}>
-        <sphereGeometry attach="geometry" args={[2, 32, 32]} />
-        <animated.meshPhongMaterial attach="material" ref={drones} map={dronesTexture} opacity={0.2} transparent />
-      </animated.mesh> */}
     </group>
   );
 }
@@ -252,65 +213,18 @@ function Stars() {
   )
 }
 
-function Universe({ showRegions }) {
+function Universe() {
   return (
-    <Canvas
-      className="Universe"
-      // orthographic={true}
-      onMouseDown={() => document.body.style.cursor = "grabbing"}
-      onMouseUp={() => document.body.style.cursor = "grab"}
-    >
+    <Canvas className="Universe">
       <ambientLight color="white" />
-      <pointLight color="white" intensity={0.06} position={[10, 10, 10]} />
-      <Mars showRegions={showRegions} />
+      <pointLight color="white" intensity={0.05} position={[10, 10, 10]} />
+      <Mars />
       <Stars />
     </Canvas>
   );
 }
 
-function updateDrones(dronesRef, data) {
-  console.log(dronesRef);
-  console.log(data);
-}
-
-function Drones() {
-  let drones = useRef();
-  // create circle shape
-  const circleRadius = 0.05;
-  const circleShape = new THREE.Shape();
-  circleShape.moveTo( 0, circleRadius );
-  circleShape.quadraticCurveTo( circleRadius, circleRadius, circleRadius, 0 );
-  circleShape.quadraticCurveTo( circleRadius, - circleRadius, 0, - circleRadius );
-  circleShape.quadraticCurveTo( - circleRadius, - circleRadius, - circleRadius, 0 );
-  circleShape.quadraticCurveTo( - circleRadius, circleRadius, 0, circleRadius );
-
-  const data = new Array(100).fill(2).map(i => ({ x: i, y: i }));
-
-  // Continuously update the GL render
-  let prevSeconds = 0;
-  useRender(() => {
-    // Continuously update the RASTER texture
-    const date = new Date();
-    if (date.getSeconds() !== prevSeconds) {
-      fetchDronesState().then(data => updateDrones(drones, data));
-      prevSeconds = date.getSeconds();
-    }
-  });
-
-  console.log(data);
-  return (
-    <group ref={drones}>
-      {
-        data.map((drone, index) => {
-          if (drone.x && drone.y) {
-            return <mesh key={index} geometry={new THREE.SphereGeometry( circleShape )} material={new THREE.MeshPhongMaterial( { color: 0x00f000, side: THREE.DoubleSide } )} position={[drone.x,drone.y,2]} scale={[1,1,1]} />
-          } else {
-            return null
-          }
-        })
-      }
-    </group>
-  )
-}
-
 export default Universe;
+
+
+
