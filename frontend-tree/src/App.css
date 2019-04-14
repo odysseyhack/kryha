@@ -45,6 +45,15 @@
   padding: 15px 20px;
 }
 
+.Drone .dna {
+  margin-top: 9px;
+}
+
+.dna .title {
+  text-transform: uppercase;
+  font-size: 20px;
+}
+
 .Drone.alive .wrapper {
   background: rgba(0, 255, 225, 0.5);
   color: #00ffec;

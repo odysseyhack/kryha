@@ -75,8 +75,19 @@ class Store {
   }
 }
 
-async function geneticsSharing (Genetics) {
+async function geneticsSharing (Genetics, store) {
   console.log('Genetic started')
+
+  fetch(`${constants.WORLD_URL}/drone/updateDrone`, {
+    method: 'put',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      fitness: store.fitness,
+      address: store.id
+    })
+  }, 5000, 'Timeout').catch(() => console.warn('Putting fitness failed'))
 
   let n = 2
 
@@ -107,19 +118,8 @@ async function main () {
   await store.eth.createDrone(constants.PARENT1, constants.PARENT2, store.DNA)
 
   const Genetics = GeneticsFunction(store)
-  store.callbackShare = () => geneticsSharing(Genetics)
+  store.callbackShare = () => geneticsSharing(Genetics, store)
   store.callbackProcreate = async () => {
-    fetch(`${constants.WORLD_URL}/drone/updateDrone`, {
-      method: 'put',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        fitness: store.fitness,
-        address: store.address
-      })
-    }, 5000, 'Timeout').catch(() => console.warn('Putting fitness failed'))
-
     store.dead = await Genetics.checkIfDead()
     if (store.dead) return
     await Genetics.procreate()
@@ -142,6 +142,9 @@ async function main () {
       console.log(`App listening on port ${constants.PORT} [${process.env.NODE_ENV} mode]`)
     }
   })
+
+  // update initital location
+  await store.eth.mineResources(store.x, store.y, 0, 0, 0, 0)
 
   while (1) {
     console.log('Fitness: ', store.fitness)
