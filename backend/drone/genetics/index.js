@@ -6,6 +6,7 @@ const deployChild = require('../k8s/deploy')
 const fetch = require('fetch-timeout')
 const announce = require('./helper/announce')
 
+const firstBy = require('thenby')
 const utils = require('web3-utils')
 
 module.exports = function (store) {
@@ -63,7 +64,11 @@ module.exports = function (store) {
     // TODO: kill pod
     async checkIfDead () {
       console.log('Checking if dead')
-      let sortedFitness = Object.values(this.agents).sort((a, b) => b.fitness - a.fitness || b.id - a.id)
+      let sortedFitness = Object.values(this.agents).sort(
+        firstBy((a, b) => b.fitness - a.fitness)
+          .thenBy((a, b) => b.id - a.id)
+      )
+
       let lastSurvivor = sortedFitness[constants.POPSIZE - constants.CHILDREN - 1]
 
       if (lastSurvivor && lastSurvivor.fitness > store.fitness) {
@@ -100,8 +105,7 @@ module.exports = function (store) {
         if (survided) this.childrenTokens++
       }
 
-      // TODO: remove
-      this.childrenTokens = 10
+      console.log('Children tokens: ', this.childrenTokens)
 
       let [, dead] = await announce('childrenTokens', this.agents, { id: store.id, childrenTokens: this.childrenTokens })
       this._removeAgents(dead)
@@ -181,8 +185,6 @@ module.exports = function (store) {
       let deployments = []
       for (const pair of survivingPairs) {
         let newDNA = this._mutation(this._binaryCrossover(pair.parent1.DNA, pair.parent2.DNA))
-        console.log('NEW DNA, ', newDNA)
-
         deployments.push(() => {
           console.log('Creating new child')
           return deployChild(newDNA, pair.parent1.id, pair.parent2.id)
