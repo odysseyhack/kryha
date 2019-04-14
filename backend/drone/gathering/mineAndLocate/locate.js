@@ -15,7 +15,7 @@ async function getPoint (x, y) {
 
 async function locate (store) {
   const point = await getPoint(store.x, store.y)
-  await store.eth.addWorldState(store.x, store.y, point.air, point.resources, point.nature, point.water)
+  return store.eth.addWorldState(store.x, store.y, point.air, point.resources, point.nature, point.water)
 }
 
 module.exports = locate

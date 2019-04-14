@@ -6,6 +6,7 @@ const deployChild = require('../k8s/deploy')
 const fetch = require('fetch-timeout')
 const announce = require('./helper/announce')
 
+const firstBy = require('thenby')
 const utils = require('web3-utils')
 
 module.exports = function (store) {
@@ -63,20 +64,25 @@ module.exports = function (store) {
     // TODO: kill pod
     async checkIfDead () {
       console.log('Checking if dead')
-      let sortedFitness = Object.values(this.agents).sort((a, b) => b.fitness - a.fitness)
+      let sortedFitness = Object.values(this.agents).sort(
+        firstBy((a, b) => b.fitness - a.fitness)
+          .thenBy((a, b) => b.id - a.id)
+      )
+
       let lastSurvivor = sortedFitness[constants.POPSIZE - constants.CHILDREN - 1]
 
       if (lastSurvivor && lastSurvivor.fitness > store.fitness) {
         console.log(`I'm dead: ${store.id} ${store.fitness}`)
         await store.eth.killDrone()
-        return false
+        return true
       }
 
       // remove dead agents from list
       let deadDrones = sortedFitness.slice(constants.POPSIZE - constants.CHILDREN)
       this._removeAgents(deadDrones)
 
-      return true
+      console.log('Check if dead done')
+      return false
     }
 
     // Adaption of tournament selections
@@ -99,20 +105,23 @@ module.exports = function (store) {
         if (survided) this.childrenTokens++
       }
 
-      // TODO: remove
-      this.childrenTokens = 10
+      console.log('Children tokens: ', this.childrenTokens)
 
       let [, dead] = await announce('childrenTokens', this.agents, { id: store.id, childrenTokens: this.childrenTokens })
       this._removeAgents(dead)
+
+      console.log('Announce children tokens done')
     }
 
     registerChildrenTokens (id, childrenTokens) {
+      console.log('Register children tokens')
       for (let i = 0; i < childrenTokens; i++) {
         for (let j = 0; j < childrenTokens; j++) {
           if (!this.agents[id]) return
           this.parents.push(id)
         }
       }
+      console.log('Register children tokens done')
     }
 
     async announcePairs () {
@@ -125,9 +134,10 @@ module.exports = function (store) {
         parent2 = sample(this.parents)
 
         if (!parent2) continue
-
         // remove parent after selecting
         this.parents.splice(this.parents.indexOf(parent2), 1)
+
+        if (!this.agents[parent2]) continue
 
         pairs.push({
           id: Math.floor(Math.random() * 100000000),
@@ -142,17 +152,23 @@ module.exports = function (store) {
         })
       }
 
-      if (pairs.length === 0) return
+      if (pairs.length === 0) {
+        console.log('Announce pairs tokens done')
+        return
+      }
 
       let [, dead] = await announce('pairs', this.agents, { pairs })
       this._removeAgents(dead)
 
       // Register your own pairs too
       this.registerPairs(pairs)
+
+      console.log('Announce pairs tokens done')
     }
 
     registerPairs (pairs) {
       this.pairs = [...this.pairs, ...pairs]
+      console.log('Register pairs tokens done')
     }
 
     procreate () {
@@ -160,23 +176,22 @@ module.exports = function (store) {
       if (this.pairs.length === 0) return
 
       let sortedPairs = Object.values(this.pairs).sort((a, b) => b.id - a.id)
-      let lastSurvingPair = sortedPairs[constants.CHILDREN - 1]
+      let aliveParents = sortedPairs.filter(p => this.agents[p.parent2.id])
+      let lastSurvingPair = aliveParents[constants.CHILDREN - 1]
       let yourPairs = this.pairs.filter(p => p.parent1.id === store.id)
-      let survivingPairs = yourPairs.filter(p => !lastSurvingPair || p.id > lastSurvingPair.id)
 
-      console.log(survivingPairs)
+      let survivingPairs = yourPairs.filter(p => !lastSurvingPair || p.id > lastSurvingPair.id)
 
       let deployments = []
       for (const pair of survivingPairs) {
         let newDNA = this._mutation(this._binaryCrossover(pair.parent1.DNA, pair.parent2.DNA))
-        console.log('NEW DNA, ', newDNA)
-
         deployments.push(() => {
           console.log('Creating new child')
           return deployChild(newDNA, pair.parent1.id, pair.parent2.id)
         })
       }
 
+      console.log('Procreate pairs tokens done')
       return Promise.all(deployments.map(f => f()))
     }
 
@@ -208,7 +223,7 @@ module.exports = function (store) {
           continue
         }
 
-        let value = DNA[i].charCodeAt(0) / 10
+        let value = (DNA[i].charCodeAt(0) - 100) / 10
 
         let minus = Math.random() > constants.MINUS_CHANCE
         let r = normalRandom()
@@ -219,7 +234,7 @@ module.exports = function (store) {
         if (value < 0) value = 0
         if (value > 10) value = 10
 
-        DNA[i] = String.fromCharCode(Math.floor(value) * 10)
+        DNA[i] = String.fromCharCode(Math.floor(value) * 10 + 100)
       }
 
       return DNA.join('')

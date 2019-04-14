@@ -24,7 +24,7 @@ async function getWorld () {
 function getDnaNumbers (DNA) {
   let DNAnumbers = []
   for (var i = 0; i < DNA.length; i++) {
-    DNAnumbers.push(DNA.charCodeAt(i) / 10)
+    DNAnumbers.push((DNA.charCodeAt(i) - 100) / 10)
   }
   return DNAnumbers
 }
@@ -41,7 +41,7 @@ function normalizeVector (vec) {
 function calculateFunctionScore (score, func, point) {
   point = normalizeVector(point)
   func = normalizeVector(func)
-  let idealVec = { air: 1, resources: 1, water: 1, nature: 1 }
+  let idealVec = { air: 0.5, resources: 0.5, water: 0.5, nature: 0.5 }
   let newVec = { air: point.air + func.air * score, resources: point.resources + func.resources * score, water: point.water + func.water * score, nature: point.nature + func.nature * score }
 
   let a = calculateDistanceAreaVector(newVec, idealVec)
@@ -68,9 +68,12 @@ async function findClosestNode (ownX, ownY, DNA) {
   var maxFit = 0
   var maxObj = null
 
-  pointFitness.map(function (obj) {
-    if (obj.fit > maxFit) maxObj = obj
-  })
+  for (const obj of pointFitness) {
+    if (obj.fit > maxFit) {
+      maxObj = obj
+      maxFit = obj.fit
+    }
+  }
 
   return maxObj
 }
