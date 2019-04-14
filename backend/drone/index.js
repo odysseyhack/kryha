@@ -95,6 +95,17 @@ async function main () {
 
   const Genetics = GeneticsFunction(store)
   store.callback = async () => {
+    fetch(`${constants.WORLD_URL}/drone/updateDrone`, {
+      method: 'put',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fitness: store.fitness,
+        address: store.address
+      })
+    }, 5000, 'Timeout').catch(() => console.warn('Putting fitness failed'))
+
     await Genetics.checkIfDead()
     await Genetics.procreate()
 
@@ -127,7 +138,7 @@ async function main () {
     // To have some delay
     await sleep.sleep(1)
 
-    if (counter % 3000 === 0) {
+    if (counter % 500 === 0) {
       let dead = await Genetics.checkIfDead()
 
       if (dead) break
