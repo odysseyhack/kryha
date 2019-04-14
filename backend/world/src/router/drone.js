@@ -49,7 +49,7 @@ router.get('/list/dead', async (req, res, next) => {
 
 router.put('/updateDrone', async (req, res, next) => {
   try {
-    const drone = await Drone.findOneAndUpdate({ address: req.body.address }, req.body).exec()
+    const drone = await Drone.findOneAndUpdate({ address: req.body.address }, req.body, { upsert: true }).exec()
     return res.status(200).json(drone)
   } catch (error) {
     console.log(error)
