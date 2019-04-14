@@ -20,6 +20,21 @@ export async function setup () {
     const worldContract = new web3.eth.Contract(worldJsonInterface.abi, worldJsonInterface.address)
     const droneContract = new web3.eth.Contract(droneJsonInterface.abi, droneJsonInterface.address)
 
+    registerListener(droneContract, 'NewDrone', {}, async (event) => {
+      console.log('new drone')
+      const { drone: address, parent1, parent2, dna } = event.returnValues
+      await new Drone({ address, parent1, parent2, dna, fitness: 0 }).save()
+      console.info(`drone ${address} added`)
+    })
+
+    registerListener(droneContract, 'DroneDies', {}, async (event) => {
+      const { drone: address } = event.returnValues
+      const drone = await Drone.findOne({ address }).exec()
+      drone.set('alive', false)
+      await drone.save()
+      console.info(`drone ${address} died`)
+    })
+
     // got found resources event, update point in mongo
     registerListener(worldContract, 'E_FoundResources', {}, async (event) => {
       const { drone: address, x, y } = event.returnValues
@@ -55,21 +70,6 @@ export async function setup () {
       drone.set('y', y)
       await drone.save()
       console.info(`updated drone ${address}`)
-    })
-
-    registerListener(droneContract, 'NewDrone', {}, async (event) => {
-      console.log('new drone')
-      const { drone: address, parent1, parent2, dna } = event.returnValues
-      await new Drone({ address, parent1, parent2, dna, fitness: 0 }).save()
-      console.info(`drone ${address} added`)
-    })
-
-    registerListener(droneContract, 'DroneDies', {}, async (event) => {
-      const { drone: address } = event.returnValues
-      const drone = await Drone.findOne({ address }).exec()
-      drone.set('alive', false)
-      await drone.save()
-      console.info(`drone ${address} died`)
     })
   } catch (error) {
     if (error.code === 'ECONNREFUSED') {
